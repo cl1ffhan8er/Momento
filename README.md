@@ -1,50 +1,172 @@
-# Welcome to your Expo app 👋
+# 📸 Momento — Collaborative Album App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## 🧠 Overview
 
-## Get started
+**Momento** is a collaborative album application built with React Native (Expo) that allows multiple users to create, share, and contribute to albums for events and memories.
 
-1. Install dependencies
+Unlike simple photo storage apps, Momento focuses on **shared experiences**, where users can collectively build and view albums in real time.
 
-   ```bash
-   npm install
-   ```
+---
 
-2. Start the app
+## 🚀 Features (MVP)
 
-   ```bash
-   npx expo start
-   ```
+### 🔐 Authentication
 
-In the output, you'll find options to open the app in a
+* User sign up (Email/Password)
+* User login
+* Persistent authentication state
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### 📁 Albums
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+* Create albums
+* View owned albums
+* View shared albums
+* Album details (title, description, metadata)
 
-## Get a fresh project
+### 👥 Collaboration
 
-When you're ready, run:
+* Invite users to albums
+* Role-based access:
 
-```bash
-npm run reset-project
+  * Owner
+  * Contributor
+  * Viewer
+
+### 🖼️ Gallery (Mock Implementation)
+
+* Add photos using image URLs
+* View photos inside albums
+* Basic gallery display
+
+---
+
+## 🏗️ Tech Stack
+
+* **React Native (Expo)**
+* **TypeScript**
+* **Expo Router** (navigation)
+* **Firebase Authentication**
+* **Cloud Firestore**
+* *(Firebase Storage planned for future version)*
+
+---
+
+## 📁 Project Structure
+
+```
+momento/
+│
+├── app/                  # Screens (Expo Router)
+│   ├── (auth)/           # Login & Signup
+│   ├── (tabs)/           # Main app screens
+│   └── _layout.tsx       # Navigation layout
+│
+├── src/                  # Core logic
+│   ├── components/
+│   ├── services/
+│   │   └── firebase/
+│   │       ├── config.ts
+│   │       ├── auth.ts
+│   │       └── albums.ts
+│   ├── hooks/
+│   ├── utils/
+│   └── types/
+│
+├── assets/
+├── constants/
+└── scripts/
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## ⚙️ Setup Instructions
 
-To learn more about developing your project with Expo, look at the following resources:
+### 1. Clone the repository
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```
+git clone https://github.com/your-username/momento.git
+cd momento
+```
 
-## Join the community
+### 2. Install dependencies
 
-Join our community of developers creating universal apps.
+```
+npm install
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### 3. Start the development server
+
+```
+npx expo start
+```
+
+---
+
+## 🔥 Firebase Setup
+
+1. Create a Firebase project
+2. Enable:
+
+   * Authentication (Email/Password)
+   * Firestore Database
+3. Add your Firebase config in:
+
+```
+src/services/firebase/config.ts
+```
+
+---
+
+## 📌 Current Limitations
+
+* No real image uploads (uses URL placeholders)
+* No push notifications
+* No offline support
+* Basic UI (focus is functionality)
+
+---
+
+## 🧭 Roadmap
+
+### ✅ Version 1 (MVP)
+
+* Auth
+* Albums
+* Collaboration
+* Mock gallery
+
+### 🔄 Version 2
+
+* Timeline view
+* Reactions / favorites
+* Album themes
+
+### 🚀 Version 3
+
+* Firebase Storage (real uploads)
+* Memory recap / slideshow
+* Highlight generation
+
+---
+
+## 👥 Team Roles (Suggested)
+
+* Auth & User Management
+* Album System
+* Upload / Gallery
+* UI / UX
+* Collaboration & Permissions
+
+---
+
+## 🎯 Goal
+
+To build a platform where users can:
+
+> “Capture, share, and relive moments together — not alone.”
+
+---
+
+## 📄 License
+
+This project is for academic purposes.
