@@ -100,6 +100,12 @@ npm install
 npx expo start
 ```
 
+### 4. Download the application Expo on App Store / Google PlayStore
+
+```
+Scan the QR Code generated after 'npx expo start'
+```
+
 ---
 
 ## 🔥 Firebase Setup
