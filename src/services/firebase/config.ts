@@ -1,7 +1,4 @@
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { getApp, getApps, initializeApp } from "firebase/app";
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -11,9 +8,7 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_APP_ID,
 };
 
-export const app = initializeApp(firebaseConfig);
+// IMPORTANT: prevent duplicate init (Expo Router safe)
+export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-export const auth = getAuth(app);
-
-export const db = getFirestore(app);
-export const storage = getStorage(app);
+console.log("🔥 Firebase INIT");
