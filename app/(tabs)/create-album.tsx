@@ -1,5 +1,5 @@
-import { createAlbum } from "@/src/services/firebase/albums";
-import { auth } from "@/src/services/firebase/auth";
+import { getAuthInstance } from "@/src/lib/auth";
+import { createAlbum } from "@/src/services/albums.service";
 import { useState } from "react";
 import { Button, TextInput, View } from "react-native";
 
@@ -7,7 +7,7 @@ export default function CreateAlbum() {
   const [title, setTitle] = useState("");
 
   const handleCreate = async () => {
-    const user = auth.currentUser;
+    const user = getAuthInstance().currentUser;
 
     if (!user) return alert("Not logged in");
 

@@ -8,7 +8,4 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_APP_ID,
 };
 
-// IMPORTANT: prevent duplicate init (Expo Router safe)
 export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-
-console.log("🔥 Firebase INIT");

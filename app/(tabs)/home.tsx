@@ -1,5 +1,5 @@
-import { getSharedAlbums } from "@/src/services/firebase/albums";
-import { auth } from "@/src/services/firebase/auth";
+import { auth } from "@/src/lib/auth";
+import { getSharedAlbums } from "@/src/services/albums.service";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Button, Text, View } from "react-native";
@@ -21,7 +21,10 @@ export default function Home() {
 
   return (
     <View>
-      <Button title="Create Album" onPress={() => router.push("./create-album")} />
+      <Button
+        title="Create Album"
+        onPress={() => router.push("./create-album")}
+      />
 
       {albums.map((album) => (
         <Text key={album.id}>{album.title}</Text>

@@ -1,5 +1,12 @@
-import { addDoc, collection, getDocs, query, serverTimestamp, where } from "firebase/firestore";
-import { db } from "./firestore";
+import {
+  addDoc,
+  collection,
+  getDocs,
+  query,
+  serverTimestamp,
+  where,
+} from "firebase/firestore";
+import { db } from "../lib/firestore";
 
 export const createAlbum = async (title: string, userId: string) => {
   return await addDoc(collection(db, "albums"), {
@@ -12,21 +19,21 @@ export const createAlbum = async (title: string, userId: string) => {
 export const getSharedAlbums = async (userId: string) => {
   const q = query(
     collection(db, "albumMembers"),
-    where("userId", "==", userId)
+    where("userId", "==", userId),
   );
 
   const snapshot = await getDocs(q);
 
-  const albumIds = snapshot.docs.map(doc => doc.data().albumId);
+  const albumIds = snapshot.docs.map((doc) => doc.data().albumId);
 
   const albums: any[] = [];
 
   for (let id of albumIds) {
     const albumSnap = await getDocs(
-      query(collection(db, "albums"), where("__name__", "==", id))
+      query(collection(db, "albums"), where("__name__", "==", id)),
     );
 
-    albumSnap.forEach(doc => {
+    albumSnap.forEach((doc) => {
       albums.push({ id: doc.id, ...doc.data() });
     });
   }
@@ -48,7 +55,7 @@ export const getUserByEmail = async (email: string) => {
 export const inviteToAlbum = async (
   albumId: string,
   email: string,
-  role: string
+  role: string,
 ) => {
   const user = await getUserByEmail(email);
 

@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import { Button, TextInput, View } from "react-native";
-import { login } from "../../src/services/firebase/auth";
+import { login } from "../../src/lib/auth";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -19,7 +19,11 @@ export default function Login() {
   return (
     <View>
       <TextInput placeholder="Email" onChangeText={setEmail} />
-      <TextInput placeholder="Password" secureTextEntry onChangeText={setPassword} />
+      <TextInput
+        placeholder="Password"
+        secureTextEntry
+        onChangeText={setPassword}
+      />
       <Button title="Login" onPress={handleLogin} />
       <Button title="Go to Signup" onPress={() => router.push("/signup")} />
     </View>
