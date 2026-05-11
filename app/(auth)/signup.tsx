@@ -1,7 +1,9 @@
+import { AuthService } from "@/src/services/firebase/auth.service";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Button, TextInput, View } from "react-native";
-import { login } from "../../src/lib/auth";
+
+const authService = new AuthService();
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -9,7 +11,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     try {
-      await login(email, password);
+      await authService.login(email, password);
       router.replace("/home");
     } catch (e: any) {
       alert(e.message);

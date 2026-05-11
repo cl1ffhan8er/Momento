@@ -2,7 +2,7 @@ import { useFacebookAuth } from "@/src/hooks/use-facebook";
 import { AuthService } from "@/src/services/firebase/auth.service";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 const authService = new AuthService();
 
@@ -30,10 +30,10 @@ export default function Login() {
   };
 
   return (
-    <View className="flex-1 bg-[#dce4ec] items-center justify-center px-7">
-      <View className="w-full bg-white/70 rounded-2xl p-6">
+    <View style={styles.container}>
+      <View style={styles.card}>
         <TextInput
-          className="bg-white/80 border border-[#3a3f6e22] rounded-xl px-4 py-3 text-sm text-[#3a3f6e] mb-3"
+          style={styles.input}
           placeholder="Email"
           placeholderTextColor="#b0bad0"
           autoCapitalize="none"
@@ -41,43 +41,137 @@ export default function Login() {
           onChangeText={setEmail}
         />
         <TextInput
-          className="bg-white/80 border border-[#3a3f6e22] rounded-xl px-4 py-3 text-sm text-[#3a3f6e] mb-4"
+          style={[styles.input, styles.inputLast]}
           placeholder="Password"
           placeholderTextColor="#b0bad0"
           secureTextEntry
           onChangeText={setPassword}
         />
 
-        <Pressable
-          className="bg-[#3a3f6e] rounded-xl py-3 items-center mb-4"
-          onPress={handleLogin}
-        >
-          <Text className="text-white text-sm font-medium">Login</Text>
+        <Pressable style={styles.loginButton} onPress={handleLogin}>
+          <Text style={styles.loginButtonText}>Login</Text>
         </Pressable>
 
-        <View className="flex-row items-center mb-4">
-          <View className="flex-1 h-px bg-[#3a3f6e22]" />
-          <Text className="text-xs text-[#b0bad0] mx-3">or continue with</Text>
-          <View className="flex-1 h-px bg-[#3a3f6e22]" />
+        <View style={styles.dividerRow}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>or continue with</Text>
+          <View style={styles.dividerLine} />
         </View>
 
-        <Pressable
-          className="flex-row items-center justify-center border border-[#3a3f6e22] rounded-xl py-3 bg-white gap-2"
-          onPress={handleFacebook}
-        >
-          <View className="w-6 h-6 rounded-full bg-[#1877f2] items-center justify-center">
-            <Text className="text-white font-bold text-sm leading-none">f</Text>
+        <Pressable style={styles.facebookButton} onPress={handleFacebook}>
+          <View style={styles.facebookIcon}>
+            <Text style={styles.facebookIconText}>f</Text>
           </View>
-          <Text className="text-sm text-[#3a3f6e]">Continue with Facebook</Text>
+          <Text style={styles.facebookButtonText}>Continue with Facebook</Text>
         </Pressable>
       </View>
 
-      <Pressable className="mt-6" onPress={() => router.push("/signup")}>
-        <Text className="text-sm text-[#9aa4b8]">
+      <Pressable
+        style={styles.signupLink}
+        onPress={() => router.push("/signup")}
+      >
+        <Text style={styles.signupText}>
           Don't have an account?{" "}
-          <Text className="text-[#3a3f6e] font-medium">Sign up</Text>
+          <Text style={styles.signupTextBold}>Sign up</Text>
         </Text>
       </Pressable>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#dce4ec",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 28,
+  },
+  card: {
+    width: "100%",
+    backgroundColor: "rgba(255,255,255,0.7)",
+    borderRadius: 16,
+    padding: 24,
+  },
+  input: {
+    backgroundColor: "rgba(255,255,255,0.8)",
+    borderWidth: 1,
+    borderColor: "rgba(58,63,110,0.13)",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: "#3a3f6e",
+    marginBottom: 12,
+  },
+  inputLast: {
+    marginBottom: 16,
+  },
+  loginButton: {
+    backgroundColor: "#3a3f6e",
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  loginButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  dividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "rgba(58,63,110,0.13)",
+  },
+  dividerText: {
+    fontSize: 12,
+    color: "#b0bad0",
+    marginHorizontal: 12,
+  },
+  facebookButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(58,63,110,0.13)",
+    borderRadius: 12,
+    paddingVertical: 12,
+    backgroundColor: "#fff",
+    gap: 8,
+  },
+  facebookIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#1877f2",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  facebookIconText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 14,
+    lineHeight: 16,
+  },
+  facebookButtonText: {
+    fontSize: 14,
+    color: "#3a3f6e",
+  },
+  signupLink: {
+    marginTop: 24,
+  },
+  signupText: {
+    fontSize: 14,
+    color: "#9aa4b8",
+  },
+  signupTextBold: {
+    color: "#3a3f6e",
+    fontWeight: "500",
+  },
+});
