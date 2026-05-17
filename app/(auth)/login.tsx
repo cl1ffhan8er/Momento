@@ -52,7 +52,7 @@ export default function Login() {
           <Text style={styles.loginButtonText}>Login</Text>
         </Pressable>
 
-        <View style={styles.dividerRow}>
+        <View style={styles.divider}>
           <View style={styles.dividerLine} />
           <Text style={styles.dividerText}>or continue with</Text>
           <View style={styles.dividerLine} />
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
-  dividerRow: {
+  divider: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 16,
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   },
   facebookIconText: {
     color: "#fff",
-    fontWeight: "bold",
+    fontWeight: "700",
     fontSize: 14,
     lineHeight: 16,
   },

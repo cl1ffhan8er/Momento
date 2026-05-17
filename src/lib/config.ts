@@ -7,5 +7,6 @@ const firebaseConfig = {
   storageBucket: process.env.EXPO_PUBLIC_STORAGE_BUCKET,
   appId: process.env.EXPO_PUBLIC_APP_ID,
 };
+console.log("Firebase config:", JSON.stringify(firebaseConfig));
 
 export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
