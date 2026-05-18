@@ -33,19 +33,19 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (!ready) return;
-    if (user) {
-      router.replace("/(tabs)/home");
-    } else {
-      router.replace("/(auth)/login");
-    }
-  }, [ready, user]);
 
-  if (!ready)
+    const target = user ? "/(tabs)/home" : "/(auth)/login";
+
+    router.replace(target);
+}, [ready, user]);
+
+  if (!ready) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <ActivityIndicator />
       </View>
     );
+}
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>

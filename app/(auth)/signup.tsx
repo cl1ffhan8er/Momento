@@ -12,7 +12,7 @@ export default function Login() {
   const handleLogin = async () => {
     try {
       await authService.login(email, password);
-      router.replace("/home");
+      router.replace("/(tabs)/home");
     } catch (e: any) {
       alert(e.message);
     }
@@ -27,7 +27,7 @@ export default function Login() {
         onChangeText={setPassword}
       />
       <Button title="Login" onPress={handleLogin} />
-      <Button title="Go to Signup" onPress={() => router.push("/signup")} />
+      <Button title="Go to Login" onPress={() => router.push("/(auth)/login")} />
     </View>
   );
 }
