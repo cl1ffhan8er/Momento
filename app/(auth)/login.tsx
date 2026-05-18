@@ -13,7 +13,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     try {
-      authService.login(email, password);
+      await authService.login(email, password);
       router.replace("/home");
     } catch (e: any) {
       alert(e.message);
@@ -35,6 +35,7 @@ export default function Login() {
         <TextInput
           style={styles.input}
           placeholder="Email"
+          value={email}
           placeholderTextColor="#b0bad0"
           autoCapitalize="none"
           keyboardType="email-address"
@@ -43,6 +44,7 @@ export default function Login() {
         <TextInput
           style={[styles.input, styles.inputLast]}
           placeholder="Password"
+          value={password}
           placeholderTextColor="#b0bad0"
           secureTextEntry
           onChangeText={setPassword}
