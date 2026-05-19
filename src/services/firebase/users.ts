@@ -1,7 +1,7 @@
 import { COLLECTIONS } from "@/src/lib/constants/collections";
 import { db } from "@/src/lib/firestore";
 import { UserDoc } from "@/src/types";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
 
 /**
  * Create a new user document
@@ -28,6 +28,18 @@ export const getUser = async (uid: string): Promise<UserDoc | null> => {
   const userRef = doc(db, COLLECTIONS.USERS, uid);
   const userSnapshot = await getDoc(userRef);
   return userSnapshot.exists() ? (userSnapshot.data() as UserDoc) : null;
+};
+
+export const getUserByUsername = async (username: string): Promise<UserDoc | null> => {
+  const usersCollection = collection(db, COLLECTIONS.USERS);
+  const q = query(usersCollection, where("username", "==", username));
+  const querySnapshot = await getDocs(q);
+
+  if (querySnapshot.empty) {
+    return null;
+  }
+
+  return querySnapshot.docs[0].data() as UserDoc;
 };
 
 /**

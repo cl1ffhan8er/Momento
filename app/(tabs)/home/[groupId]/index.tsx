@@ -1,353 +1,236 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    Modal,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    View
+  ActivityIndicator,
+  FlatList,
+  Image,
+  Pressable,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 
-import { Button } from "@/components/Button";
-import { Card } from "@/components/Card";
-import { Input } from "@/components/Input";
-import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 import { useGroupDetail } from "@/src/hooks/useGroupDetail";
-import { createAlbum } from "@/src/services/firebase/albums";
 
 export default function GroupDetailScreen() {
   const router = useRouter();
-  const { groupId } = useLocalSearchParams<{ groupId: string }>();
+
+  const { groupId } =
+    useLocalSearchParams<{ groupId: string }>();
+
   const { user } = useCurrentUser();
-  const { group, members, albums, loading, error, refresh } = useGroupDetail(groupId ?? null);
-  const [memberViewOpen, setMemberViewOpen] = useState(false);
-  const [memberTab, setMemberTab] = useState<"all" | "admins">("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortNewest, setSortNewest] = useState(true);
-  const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [newAlbumTitle, setNewAlbumTitle] = useState("");
-  const [creating, setCreating] = useState(false);
+
+  const {
+    group,
+    members,
+    albums,
+    loading,
+    error,
+    refresh,
+  } = useGroupDetail(groupId ?? null);
+
+  const [searchQuery, setSearchQuery] =
+    useState("");
+
+  const [sortNewest, setSortNewest] =
+    useState(true);
 
   const filteredAlbums = useMemo(() => {
-    const lowerQuery = searchQuery.toLowerCase();
+    const lower =
+      searchQuery.toLowerCase();
+
     return albums
-      .filter((album) => album.title.toLowerCase().includes(lowerQuery))
-      .sort((a, b) => (sortNewest ? b.createdAt - a.createdAt : a.createdAt - b.createdAt));
+      .filter((album) =>
+        album.title
+          .toLowerCase()
+          .includes(lower)
+      )
+      .sort((a, b) =>
+        sortNewest
+          ? b.createdAt - a.createdAt
+          : a.createdAt - b.createdAt
+      );
   }, [albums, searchQuery, sortNewest]);
 
-  const visibleMembers = useMemo(
-    () =>
-      members.filter((member) =>
-        memberTab === "admins" ? member.role === "owner" : true
-      ),
-    [memberTab, members]
-  );
+  useEffect(() => {
+    const routerAny = router as any;
+    const unsubscribe = routerAny?.addListener?.("focus", () => {
+      refresh();
+    });
 
-  const handleCreateAlbum = async () => {
-    if (!groupId || !user) {
-      return;
-    }
-
-    if (!newAlbumTitle.trim()) {
-      return;
-    }
-
-    try {
-      setCreating(true);
-      await createAlbum(groupId, newAlbumTitle.trim(), user.uid);
-      await refresh();
-      setNewAlbumTitle("");
-      setCreateModalOpen(false);
-    } catch (e: any) {
-      console.error(e);
-    } finally {
-      setCreating(false);
-    }
-  };
+    return typeof unsubscribe === "function"
+      ? unsubscribe
+      : undefined;
+  }, [router, refresh]);
 
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.headerRow}>
-          <Pressable onPress={() => router.back()} style={styles.navButton}>
-            <ThemedText>Back</ThemedText>
-          </Pressable>
-          <Pressable
-            onPress={() => setMemberViewOpen((value) => !value)}
-            style={styles.groupCard}
-          >
-            <View style={styles.avatarPlaceholder}>
-              <ThemedText type="title">{group?.name?.[0] ?? "G"}</ThemedText>
-            </View>
-            <View style={styles.groupInfo}>
-              <ThemedText type="title">{group?.name ?? "Group"}</ThemedText>
-              <ThemedText style={styles.membersText}>
-                Members • {group?.memberCount ?? 0}
-              </ThemedText>
-            </View>
-          </Pressable>
-          <Pressable style={styles.navButton} onPress={() => router.push("/home/join-group")}>
-            <ThemedText>Add</ThemedText>
-          </Pressable>
-        </View>
+    <View className="flex-1 bg-black px-5 pt-16">
+      {/* HEADER */}
+      <View className="mb-6 flex-row items-center">
+        {/* BACK */}
+        <Pressable
+          onPress={() => router.back()}
+          className="mr-4"
+        >
+          <Text className="text-base text-white">
+            Back
+          </Text>
+        </Pressable>
 
-        {memberViewOpen ? (
-          <Card style={styles.membersCard}>
-            <View style={styles.tabsRow}>
-              <Pressable onPress={() => setMemberTab("all")} style={memberTab === "all" ? styles.activeTab : styles.tab}>
-                <ThemedText>{"All"}</ThemedText>
-              </Pressable>
-              <Pressable onPress={() => setMemberTab("admins")} style={memberTab === "admins" ? styles.activeTab : styles.tab}>
-                <ThemedText>{"Admins"}</ThemedText>
-              </Pressable>
-            </View>
-            {visibleMembers.map((member) => (
-              <View key={member.userId} style={styles.memberRow}>
-                <ThemedText>{member.nickname ?? member.userId}</ThemedText>
-                <ThemedText style={styles.roleText}>{member.role}</ThemedText>
-              </View>
-            ))}
-          </Card>
-        ) : null}
+        {/* GROUP CARD */}
+        <Pressable className="flex-1 flex-row items-center" onPress={() => router.push(`/home/${groupId}/members`)}>
+          <View className="mr-3 h-14 w-14 items-center justify-center rounded-2xl bg-neutral-800">
+            <Text className="text-xl font-bold text-white">
+              {group?.name?.[0] ?? "G"}
+            </Text>
+          </View>
 
-        <View style={styles.searchRow}>
-          <Input
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder="Search albums"
-            style={styles.searchInput}
-          />
-          <Button
-            title={sortNewest ? "Newest" : "Oldest"}
-            onPress={() => setSortNewest((value) => !value)}
-            accessibilityLabel="Sort albums by date"
-            variant="secondary"
-            style={styles.sortButton}
-          />
-        </View>
+          <View className="flex-1">
+            <Text className="text-xl font-bold text-white">
+              {group?.name ?? "Group"}
+            </Text>
 
-        {loading ? (
-          <ActivityIndicator size="large" style={styles.loader} />
-        ) : error ? (
-          <ThemedText style={styles.error}>{error}</ThemedText>
-        ) : (
-          <FlatList
-            data={filteredAlbums}
-            keyExtractor={(item) => item.albumId}
-            numColumns={2}
-            columnWrapperStyle={styles.columnWrapper}
-            contentContainerStyle={styles.albumList}
-            renderItem={({ item }) => (
-              <Pressable
-                style={styles.albumCard}
-                onPress={() => router.push(`/home/${groupId}/albums/${item.albumId}`)}
-              >
-                <Card>
-                  <View style={styles.albumCoverPlaceholder}>
-                    <ThemedText type="subtitle">{item.title[0] ?? "A"}</ThemedText>
-                  </View>
-                  <ThemedText style={styles.albumTitle}>{item.title}</ThemedText>
-                  <ThemedText style={styles.albumMeta}>{item.photoCount} photos</ThemedText>
-                </Card>
-              </Pressable>
-            )}
-            ListEmptyComponent={() => (
-              <Card style={styles.emptyCard}>
-                <ThemedText type="subtitle">No albums yet</ThemedText>
-                <ThemedText style={styles.emptyText}>
-                  Create an album for the group to share photos.
-                </ThemedText>
-              </Card>
-            )}
-          />
-        )}
+            <Text className="mt-1 text-sm text-neutral-400">
+              {group?.memberCount ?? 0} members
+            </Text>
+          </View>
+        </Pressable>
 
-        <Button
-          title="Create an album"
-          onPress={() => setCreateModalOpen(true)}
-          accessibilityLabel="Create a new album"
-          style={styles.createButton}
+        {/* INVITE */}
+        <Pressable
+          onPress={() =>
+            router.push(`/home/${groupId}/invite`)
+          }
+          className="ml-3 h-12 w-12 items-center justify-center rounded-full bg-white"
+        >
+          <Text className="text-2xl font-bold text-black">
+            +
+          </Text>
+        </Pressable>
+      </View>
+
+      <View className="mb-6 items-center">
+        <Text className="text-5xl font-bold tracking-widest text-white uppercase">
+          YOUR ALBUMS
+        </Text>
+        <View className="mt-3 h-px w-full bg-neutral-700" />
+      </View>
+
+      {/* SEARCH + SORT */}
+      <View className="mb-5 flex-row items-center">
+        <TextInput
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Search albums"
+          placeholderTextColor="#737373"
+          className="flex-1 rounded-2xl bg-neutral-900 px-5 py-4 text-white"
         />
-      </ScrollView>
 
-      <Modal visible={createModalOpen} animationType="slide" transparent>
-        <View style={styles.modalBackdrop}>
-          <Card style={styles.modalCard}>
-            <ThemedText type="title" style={styles.modalTitle}>
-              New Album
-            </ThemedText>
-            <Input
-              value={newAlbumTitle}
-              onChangeText={setNewAlbumTitle}
-              placeholder="Album title"
-            />
-            <Button
-              title={creating ? "Creating..." : "Create album"}
-              onPress={handleCreateAlbum}
-              accessibilityLabel="Create album"
-            />
-            <Pressable onPress={() => setCreateModalOpen(false)} style={styles.modalCancel}>
-              <ThemedText>Cancel</ThemedText>
+        <Pressable
+          onPress={() =>
+            setSortNewest(
+              (value) => !value
+            )
+          }
+          className="ml-3 rounded-2xl bg-neutral-900 px-5 py-4"
+        >
+          <Text className="font-semibold text-white">
+            {sortNewest
+              ? "Newest"
+              : "Oldest"}
+          </Text>
+        </Pressable>
+      </View>
+
+      {/* CONTENT */}
+      {loading ? (
+        <ActivityIndicator />
+      ) : error ? (
+        <Text className="text-red-500">
+          {error}
+        </Text>
+      ) : (
+        <FlatList
+          data={filteredAlbums}
+          keyExtractor={(item) =>
+            item.albumId
+          }
+          numColumns={2}
+          showsVerticalScrollIndicator={
+            false
+          }
+          columnWrapperStyle={{
+            justifyContent:
+              "space-between",
+          }}
+          contentContainerStyle={{
+            paddingBottom: 120,
+          }}
+          ListEmptyComponent={() => (
+            <View className="mt-10 items-center rounded-3xl bg-neutral-900 p-8">
+              <Text className="text-lg font-bold text-white">
+                No albums yet
+              </Text>
+
+              <Text className="mt-2 text-center text-neutral-400">
+                Create an album and start
+                sharing memories.
+              </Text>
+            </View>
+          )}
+          renderItem={({ item }) => (
+            <Pressable
+              className="mb-4 w-[48%]"
+              onPress={() =>
+                router.push(
+                  `/home/${groupId}/albums/${item.albumId}`
+                )
+              }
+            >
+              <View className="overflow-hidden rounded-3xl bg-neutral-900">
+                {/* COVER */}
+                {item.coverPhotoUrl ? (
+                  <Image
+                    source={{ uri: item.coverPhotoUrl }}
+                    className="h-40 w-full"
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View className="h-40 items-center justify-center bg-neutral-800">
+                    <Text className="text-4xl font-bold text-white">
+                      {item.title[0] ?? "A"}
+                    </Text>
+                  </View>
+                )}
+
+                {/* INFO */}
+                <View className="p-4">
+                  <Text className="text-base font-bold text-white">
+                    {item.title}
+                  </Text>
+
+                  <Text className="mt-1 text-sm text-neutral-400">
+                    {item.photoCount} photos
+                  </Text>
+                </View>
+              </View>
             </Pressable>
-          </Card>
-        </View>
-      </Modal>
-    </ThemedView>
+          )}
+        />
+      )}
+
+      {/* CREATE ALBUM BUTTON */}
+      <Pressable
+        onPress={() =>
+          router.push(`/home/${groupId}/create-album`)
+        }
+        className="absolute bottom-8 left-5 right-5 items-center rounded-3xl bg-white py-5"
+      >
+        <Text className="text-base font-bold text-black">
+          Create Album
+        </Text>
+      </Pressable>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  loader: {
-    marginTop: 24,
-  },
-  error: {
-    color: "#dc2626",
-    marginTop: 16,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 18,
-  },
-  navButton: {
-    padding: 12,
-  },
-  groupCard: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    borderRadius: 16,
-    marginHorizontal: 8,
-    backgroundColor: "#f8fafc",
-  },
-  avatarPlaceholder: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: "#e2e8f0",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  groupInfo: {
-    flex: 1,
-  },
-  membersText: {
-    marginTop: 6,
-    color: "#6b7280",
-  },
-  membersCard: {
-    marginBottom: 16,
-    padding: 16,
-  },
-  tabsRow: {
-    flexDirection: "row",
-    marginBottom: 12,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 12,
-    alignItems: "center",
-    backgroundColor: "#e2e8f0",
-    marginRight: 8,
-  },
-  activeTab: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 12,
-    alignItems: "center",
-    backgroundColor: "#0a7ea4",
-    marginRight: 8,
-  },
-  memberRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
-  },
-  roleText: {
-    color: "#5b21b6",
-  },
-  searchRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  searchInput: {
-    flex: 1,
-    marginRight: 10,
-  },
-  sortButton: {
-    minWidth: 100,
-  },
-  columnWrapper: {
-    justifyContent: "space-between",
-  },
-  albumList: {
-    paddingBottom: 16,
-  },
-  albumCard: {
-    flex: 1,
-    marginBottom: 16,
-    marginRight: 8,
-  },
-  albumCoverPlaceholder: {
-    height: 110,
-    borderRadius: 16,
-    backgroundColor: "#e2e8f0",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 12,
-  },
-  albumTitle: {
-    marginBottom: 6,
-    fontWeight: "700",
-  },
-  albumMeta: {
-    color: "#6b7280",
-  },
-  emptyCard: {
-    marginBottom: 16,
-    padding: 24,
-    alignItems: "center",
-  },
-  emptyText: {
-    marginTop: 10,
-    color: "#6b7280",
-    textAlign: "center",
-  },
-  createButton: {
-    marginTop: 8,
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.35)",
-    justifyContent: "center",
-    padding: 20,
-  },
-  modalCard: {
-    padding: 20,
-    borderRadius: 18,
-  },
-  modalTitle: {
-    marginBottom: 16,
-  },
-  modalCancel: {
-    marginTop: 12,
-    alignItems: "center",
-  },
-});

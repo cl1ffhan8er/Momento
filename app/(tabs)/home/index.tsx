@@ -1,115 +1,90 @@
-import { Link, useRouter } from "expo-router";
-import React from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
+import { useRouter } from "expo-router";
+import {
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
 import { Button } from "@/components/Button";
-import { Card } from "@/components/Card";
-import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
+import GroupCard from "@/components/ui/group-card";
+
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 import { useGroups } from "@/src/hooks/useGroups";
 
-export default function HomeScreen() {
+export default function GroupsScreen() {
   const router = useRouter();
+
   const { user, loading: authLoading } = useCurrentUser();
-  const { groups, loading, error } = useGroups(user?.uid ?? null);
+
+  const { groups, loading, error } = useGroups(
+    user?.uid ?? null
+  );
 
   const isLoading = authLoading || loading;
 
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <ThemedText type="title" style={styles.title}>
-          My Groups
-        </ThemedText>
+    <View className="flex-1 bg-black px-5 pt-16">
+      <View className="mb-6 items-center">
+        <Text className="text-5xl font-bold tracking-widest text-white uppercase">
+          YOUR GROUP
+        </Text>
+        <View className="mt-3 h-px w-full bg-neutral-700" />
+      </View>
 
-        <View style={styles.actions}>
-          <Button
-            title="Create group"
-            onPress={() => router.push("/home/create-group")}
-            accessibilityLabel="Create a new group"
-          />
-          <Button
-            title="Join group"
-            onPress={() => router.push("/home/join-group")}
-            accessibilityLabel="Join an existing group"
-            variant="secondary"
-            style={styles.secondaryButton}
-          />
-        </View>
-
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: 140,
+        }}
+      >
         {isLoading ? (
-          <ActivityIndicator size="large" style={styles.loader} />
+          <ActivityIndicator />
         ) : error ? (
-          <ThemedText style={styles.error}>{error}</ThemedText>
+          <Text className="text-red-500">
+            {error}
+          </Text>
         ) : groups.length === 0 ? (
-          <Card style={styles.emptyCard}>
-            <ThemedText style={styles.emptyTitle}>No groups yet</ThemedText>
-            <ThemedText>
-              Create your first group or join a group with a join code.
-            </ThemedText>
-          </Card>
+          <View className="rounded-3xl bg-neutral-900 p-6">
+            <Text className="text-lg font-bold text-white">
+              No groups yet
+            </Text>
+
+            <Text className="mt-2 text-neutral-400">
+              Create your first group or join one.
+            </Text>
+          </View>
         ) : (
           groups.map((group) => (
-            <Link
+            <GroupCard
               key={group.groupId}
-              href={`/home/${group.groupId}`}
-              style={styles.link}
-              accessibilityLabel={`Open group ${group.name}`}
-            >
-              <Card>
-                <ThemedText type="subtitle">{group.name}</ThemedText>
-                <ThemedText style={styles.groupMeta}>
-                  {group.memberCount} member{group.memberCount === 1 ? "" : "s"}
-                </ThemedText>
-              </Card>
-            </Link>
+              name={group.name}
+              memberCount={group.memberCount}
+              onPress={() =>
+                router.push(`/home/${group.groupId}`)
+              }
+            />
           ))
         )}
       </ScrollView>
-    </ThemedView>
+
+      {/* Floating Buttons */}
+      <View className="absolute bottom-8 left-5 right-5 gap-3">
+        <Button
+          title="Create a Group"
+          onPress={() =>
+            router.push("/home/create-group")
+          }
+        />
+
+        <Button
+          title="Join a Group"
+          variant="secondary"
+          onPress={() =>
+            router.push("/home/join-group")
+          }
+        />
+      </View>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 20,
-  },
-  title: {
-    marginBottom: 24,
-  },
-  actions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  secondaryButton: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: "#0a7ea4",
-  },
-  loader: {
-    marginTop: 36,
-  },
-  error: {
-    color: "#dc2626",
-    marginTop: 12,
-  },
-  emptyCard: {
-    paddingVertical: 28,
-  },
-  emptyTitle: {
-    marginBottom: 8,
-    fontWeight: "700",
-  },
-  groupMeta: {
-    marginTop: 8,
-    color: "#6b7280",
-  },
-  link: {
-    textDecorationLine: "none",
-  },
-});

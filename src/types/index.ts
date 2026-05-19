@@ -42,7 +42,7 @@ export interface PhotoDoc {
   groupId: string;
   uploadedBy: string;
   storageUrl: string | null;
-  title?: string;
-  caption?: string;
+  title: string | null;
+  caption: string | null;
   uploadedAt: number; // timestamp
 }

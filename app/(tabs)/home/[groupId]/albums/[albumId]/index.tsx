@@ -1,42 +1,34 @@
-import * as ImagePicker from "expo-image-picker";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    Image,
-    Modal,
-    Pressable,
-    StyleSheet,
-    View,
-} from "react-native";
-
-import { Button } from "@/components/Button";
-import { Card } from "@/components/Card";
-import { Input } from "@/components/Input";
 import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
+import PhotoActions from "@/components/ui/photo-actions";
+import PhotoViewer from "@/components/ui/photo-viewer";
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 import { getAlbum } from "@/src/services/firebase/albums";
 import { batchDeletePhotos, createPhoto, getAlbumPhotos, uploadPhotoFile } from "@/src/services/firebase/photos";
 import type { AlbumDoc, PhotoDoc } from "@/src/types";
+import * as ImagePicker from "expo-image-picker";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, Alert, FlatList, Image, Modal, Pressable, Text, View } from "react-native";
 
 export default function AlbumDetailScreen() {
   const router = useRouter();
   const { groupId, albumId } = useLocalSearchParams<{ groupId: string; albumId: string }>();
   const { user } = useCurrentUser();
+
   const [album, setAlbum] = useState<AlbumDoc | null>(null);
   const [photos, setPhotos] = useState<PhotoDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedPhotoIds, setSelectedPhotoIds] = useState<string[]>([]);
+
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
-  const [photoTitle, setPhotoTitle] = useState("");
-  const [photoCaption, setPhotoCaption] = useState("");
+  const [selectedImageUris, setSelectedImageUris] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState(0);
 
   const loadAlbumData = async () => {
     if (!groupId || !albumId) {
@@ -49,13 +41,10 @@ export default function AlbumDetailScreen() {
     setError(null);
 
     try {
-      const [albumResult, photoResult] = await Promise.all([
-        getAlbum(albumId),
-        getAlbumPhotos(albumId),
-      ]);
-
+      const [albumResult, photoResult] = await Promise.all([getAlbum(albumId), getAlbumPhotos(albumId)]);
       if (!albumResult) {
         setError("Album not found");
+        setLoading(false);
         return;
       }
 
@@ -76,11 +65,7 @@ export default function AlbumDetailScreen() {
   const isEmpty = !loading && photos.length === 0;
 
   const togglePhotoSelection = (photoId: string) => {
-    setSelectedPhotoIds((current) =>
-      current.includes(photoId)
-        ? current.filter((id) => id !== photoId)
-        : [...current, photoId]
-    );
+    setSelectedPhotoIds((current) => (current.includes(photoId) ? current.filter((id) => id !== photoId) : [...current, photoId]));
   };
 
   const handlePickPhoto = async () => {
@@ -90,37 +75,28 @@ export default function AlbumDetailScreen() {
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.7,
-    });
-
-    if (!result.canceled && result.assets.length > 0) {
-      setSelectedImageUri(result.assets[0].uri);
-    }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7, allowsMultipleSelection: true });
+    if (!result.canceled && result.assets.length > 0) setSelectedImageUris(result.assets.map((a) => a.uri));
   };
 
-  const handleUploadPhoto = async () => {
-    if (!selectedImageUri || !user || !groupId || !albumId) {
-      return;
-    }
-
-    if (photos.length >= 50) {
-      Alert.alert("Photo limit reached", "This album already has 50 photos.");
+  const handleUploadPhotos = async () => {
+    if (selectedImageUris.length === 0 || !user || !groupId || !albumId) return;
+    if (photos.length + selectedImageUris.length > 500) {
+      Alert.alert("Photo limit reached", "This album would exceed the photo limit.");
       return;
     }
 
     try {
       setUploading(true);
-      const downloadUrl = await uploadPhotoFile(selectedImageUri, albumId);
-      await createPhoto(albumId, groupId, user.uid, downloadUrl, photoTitle || undefined, photoCaption || undefined);
-      setSelectedImageUri(null);
-      setPhotoTitle("");
-      setPhotoCaption("");
+      for (const uri of selectedImageUris) {
+        const downloadUrl = await uploadPhotoFile(uri, albumId);
+        await createPhoto(albumId, groupId, user.uid, downloadUrl);
+      }
+      setSelectedImageUris([]);
       setUploadModalOpen(false);
       await loadAlbumData();
     } catch (e: any) {
-      Alert.alert("Upload failed", e.message ?? "Could not upload the photo.");
+      Alert.alert("Upload failed", e.message ?? "Could not upload photos.");
     } finally {
       setUploading(false);
     }
@@ -131,12 +107,7 @@ export default function AlbumDetailScreen() {
       setSelectionMode(true);
       return;
     }
-
-    if (selectedCount === 0) {
-      Alert.alert("Select photos", "Tap photos to select them before downloading.");
-      return;
-    }
-
+    if (selectedCount === 0) return Alert.alert("Select photos", "Tap photos to select them before downloading.");
     Alert.alert("Download photos", `Preparing to download ${selectedCount} photo(s).`);
   };
 
@@ -145,302 +116,136 @@ export default function AlbumDetailScreen() {
       setSelectionMode(true);
       return;
     }
+    if (selectedCount === 0) return Alert.alert("Select photos", "Tap photos to select them before deleting.");
 
-    if (selectedCount === 0) {
-      Alert.alert("Select photos", "Tap photos to select them before deleting.");
-      return;
-    }
-
-    Alert.alert(
-      "Delete photos",
-      `Delete ${selectedCount} selected photo(s)?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await batchDeletePhotos(selectedPhotoIds);
-              setSelectedPhotoIds([]);
-              setSelectionMode(false);
-              await loadAlbumData();
-            } catch (e: any) {
-              Alert.alert("Delete failed", e.message ?? "Could not delete photos.");
-            }
-          },
+    Alert.alert("Delete photos", `Delete ${selectedCount} selected photo(s)?`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await batchDeletePhotos(selectedPhotoIds);
+            setSelectedPhotoIds([]);
+            setSelectionMode(false);
+            await loadAlbumData();
+          } catch (e: any) {
+            Alert.alert("Delete failed", e.message ?? "Could not delete photos.");
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const header = (
-    <View>
-      <View style={styles.headerRow}>
-        <Pressable onPress={() => router.back()} style={styles.iconButton}>
-          <ThemedText>Back</ThemedText>
+    <View className="pb-4 px-5">
+
+        <Pressable onPress={() => router.back()} className="p-3">
+            <ThemedText>Back</ThemedText>
         </Pressable>
-        <View style={styles.titleColumn}>
-          <ThemedText type="title">{album?.title ?? "Album"}</ThemedText>
-          <ThemedText style={styles.subtitle}>
-            Created by {album?.createdBy ?? "unknown"}
-          </ThemedText>
+
+        <View className="mb-6 items-center">
+            <Text className="text-5xl font-bold tracking-widest text-white uppercase">
+                {album?.title ?? "Album"}
+            </Text>
+            <View className="mt-3 h-px w-full bg-neutral-700" />
         </View>
-      </View>
 
       {!isEmpty && (
-        <View style={styles.actionRow}>
-          <Button title="Add" onPress={() => setUploadModalOpen(true)} accessibilityLabel="Upload photos" />
-          <Button
-            title={selectionMode ? "Download" : "Select"}
-            onPress={handleDownloadSelected}
-            accessibilityLabel="Download selected photos"
-            variant={selectionMode ? "primary" : "secondary"}
-            style={styles.smallButton}
-          />
-          <Button
-            title="Delete"
-            onPress={handleDeleteSelected}
-            accessibilityLabel="Delete selected photos"
-            variant={selectionMode ? "secondary" : "secondary"}
-            style={styles.smallButton}
-          />
-        </View>
+        <PhotoActions selectionMode={selectionMode} selectedCount={selectedCount} onAdd={() => setUploadModalOpen(true)} onToggleSelect={handleDownloadSelected} onDelete={handleDeleteSelected} />
       )}
 
-      {selectionMode && selectedCount > 0 && (
-        <ThemedText style={styles.selectedCount}>{selectedCount} selected</ThemedText>
-      )}
+      {selectionMode && selectedCount > 0 && <ThemedText className="text-neutral-400 mb-3">{selectedCount} selected</ThemedText>}
     </View>
   );
 
-  const renderPhoto = ({ item }: { item: PhotoDoc }) => {
+  const renderPhoto = ({ item, index }: { item: PhotoDoc; index: number }) => {
     const selected = selectedPhotoIds.includes(item.photoId);
     return (
-      <Pressable
-        style={styles.photoCard}
-        onPress={() => {
-          if (selectionMode) {
-            togglePhotoSelection(item.photoId);
-          }
-        }}
-        onLongPress={() => setSelectionMode(true)}
-      >
-        <Card style={styles.photoInnerCard}>
-          <View style={styles.photoPreview}>
-            {item.storageUrl ? (
-              <Image source={{ uri: item.storageUrl }} style={styles.photoImage} />
-            ) : (
-              <ThemedText>{item.title?.[0] ?? "P"}</ThemedText>
-            )}
+      <Pressable key={item.photoId} className="flex-1 mb-4 mr-2" onPress={() => (selectionMode ? togglePhotoSelection(item.photoId) : (setViewerIndex(index), setViewerOpen(true)))} onLongPress={() => setSelectionMode(true)}>
+        <View className="bg-neutral-900 rounded-2xl p-3">
+          <View className="h-40 rounded-xl overflow-hidden bg-neutral-800 mb-3 items-center justify-center">
+            {item.storageUrl ? <Image source={{ uri: item.storageUrl }} className="w-full h-full" resizeMode="cover" /> : <ThemedText>P</ThemedText>}
           </View>
-          <ThemedText style={styles.photoTitle}>{item.title || "Untitled"}</ThemedText>
-          <ThemedText style={styles.photoMeta}>{item.caption ?? "No caption"}</ThemedText>
+
+          <ThemedText className="font-bold mb-1">{item.title || ""}</ThemedText>
+          <ThemedText className="text-neutral-400">{item.caption ?? ""}</ThemedText>
+
           {selectionMode && (
-            <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
-              {selected && <ThemedText style={styles.checkboxText}>✓</ThemedText>}
+            <View className={`absolute top-3 right-3 w-6 h-6 rounded-full items-center justify-center ${selected ? "bg-teal-600" : "bg-white/90"}`}>
+              {selected && <ThemedText className="text-white">✓</ThemedText>}
             </View>
           )}
-        </Card>
+        </View>
       </Pressable>
     );
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <View className="flex-1 bg-black">
       {loading ? (
-        <View style={styles.centered}>
+        <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" />
         </View>
       ) : error ? (
-        <View style={styles.centered}>
-          <ThemedText style={styles.errorText}>{error}</ThemedText>
+        <View className="flex-1 items-center justify-center">
+          <ThemedText className="text-red-500">{error}</ThemedText>
         </View>
       ) : isEmpty ? (
-        <View style={styles.emptyStateContainer}>
+        <View className="p-5">
           {header}
-          <Card style={styles.emptyCard}>
+          <View className="bg-neutral-900 rounded-3xl p-6 items-center">
             <ThemedText type="subtitle">No photos yet</ThemedText>
-            <ThemedText style={styles.emptyText}>Upload photos to share in this album.</ThemedText>
-            <Button title="Upload Photos" onPress={() => setUploadModalOpen(true)} accessibilityLabel="Upload photos" />
-          </Card>
+            <ThemedText className="text-neutral-400 mt-2 text-center">Upload photos to share in this album.</ThemedText>
+            <Pressable onPress={() => setUploadModalOpen(true)} className="mt-4 rounded-2xl bg-white px-4 py-3">
+              <ThemedText className="font-bold text-black">Upload Photos</ThemedText>
+            </Pressable>
+          </View>
         </View>
       ) : (
-        <FlatList
+        <FlatList<PhotoDoc>
           ListHeaderComponent={header}
-          ListHeaderComponentStyle={styles.listHeader}
+          ListHeaderComponentStyle={{ padding: 20, paddingBottom: 0 }}
           data={photos}
-          keyExtractor={(item) => item.photoId}
+          keyExtractor={(item: PhotoDoc) => item.photoId}
           numColumns={2}
-          columnWrapperStyle={styles.columnWrapper}
-          contentContainerStyle={styles.photoList}
+          columnWrapperStyle={{ justifyContent: "space-between" }}
+          contentContainerStyle={{ paddingTop: 8, paddingHorizontal: 20, paddingBottom: 40 }}
           renderItem={renderPhoto}
         />
       )}
 
       <Modal visible={uploadModalOpen} animationType="slide" transparent>
-        <View style={styles.modalBackdrop}>
-          <Card style={styles.modalCard}>
-            <ThemedText type="title" style={styles.modalTitle}>
-              Upload Photo
+        <View className="flex-1 bg-black/60 justify-center p-5">
+          <View className="bg-neutral-900 rounded-3xl p-6">
+            <ThemedText type="title" className="mb-4">
+              Upload Photos
             </ThemedText>
-            <Button title="Choose Photo" onPress={handlePickPhoto} accessibilityLabel="Choose photo" />
-            {selectedImageUri ? (
-              <Image source={{ uri: selectedImageUri }} style={styles.uploadPreview} />
-            ) : null}
-            <Input value={photoTitle} onChangeText={setPhotoTitle} placeholder="Title" />
-            <Input value={photoCaption} onChangeText={setPhotoCaption} placeholder="Caption" />
-            <Button
-              title={uploading ? "Uploading..." : "Upload"}
-              onPress={handleUploadPhoto}
-              accessibilityLabel="Upload photo"
-            />
-            <Pressable onPress={() => setUploadModalOpen(false)} style={styles.modalCancel}>
-              <ThemedText>Cancel</ThemedText>
+
+            <Pressable onPress={handlePickPhoto} className="rounded-2xl bg-white px-4 py-3 mb-4 items-center">
+              <ThemedText className="font-bold text-black">Choose Photos</ThemedText>
             </Pressable>
-          </Card>
+
+            {selectedImageUris.length > 0 ? (
+              <View className="mb-4">
+                {selectedImageUris.map((uri) => (
+                  <Image key={uri} source={{ uri }} className="w-full h-40 rounded-xl mb-3" resizeMode="cover" />
+                ))}
+              </View>
+            ) : null}
+
+            <Pressable onPress={handleUploadPhotos} className="rounded-2xl bg-white px-4 py-3 items-center">
+              <ThemedText className="font-bold text-black">{uploading ? "Uploading..." : "Upload"}</ThemedText>
+            </Pressable>
+
+            <Pressable onPress={() => setUploadModalOpen(false)} className="mt-4 items-center">
+              <ThemedText className="text-neutral-400">Cancel</ThemedText>
+            </Pressable>
+          </View>
         </View>
       </Modal>
-    </ThemedView>
+
+      <PhotoViewer visible={viewerOpen} photos={photos.map((p) => ({ photoId: p.photoId, storageUrl: p.storageUrl, caption: p.caption }))} startIndex={viewerIndex} onClose={() => setViewerOpen(false)} onRefresh={loadAlbumData} />
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  errorText: {
-    color: "#dc2626",
-  },
-  listHeader: {
-    padding: 20,
-    paddingBottom: 0,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  iconButton: {
-    padding: 12,
-  },
-  titleColumn: {
-    flex: 1,
-    marginLeft: 8,
-  },
-  subtitle: {
-    marginTop: 8,
-    color: "#6b7280",
-  },
-  actionRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginBottom: 14,
-  },
-  smallButton: {
-    minWidth: 90,
-  },
-  selectedCount: {
-    color: "#6b7280",
-    marginBottom: 12,
-  },
-  photoList: {
-    paddingTop: 8,
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-  },
-  columnWrapper: {
-    justifyContent: "space-between",
-  },
-  photoCard: {
-    flex: 1,
-    marginBottom: 16,
-    marginRight: 8,
-  },
-  photoInnerCard: {
-    padding: 12,
-  },
-  photoPreview: {
-    height: 120,
-    borderRadius: 16,
-    backgroundColor: "#e2e8f0",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 12,
-    overflow: "hidden",
-  },
-  photoImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-  },
-  photoTitle: {
-    marginBottom: 4,
-    fontWeight: "700",
-  },
-  photoMeta: {
-    color: "#6b7280",
-  },
-  checkbox: {
-    position: "absolute",
-    top: 12,
-    right: 12,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#94a3b8",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.9)",
-  },
-  checkboxSelected: {
-    backgroundColor: "#0a7ea4",
-    borderColor: "#0a7ea4",
-  },
-  checkboxText: {
-    color: "#fff",
-    fontWeight: "700",
-  },
-  emptyStateContainer: {
-    padding: 20,
-  },
-  emptyCard: {
-    marginTop: 24,
-    padding: 24,
-    alignItems: "center",
-  },
-  emptyText: {
-    marginTop: 10,
-    color: "#6b7280",
-    textAlign: "center",
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.35)",
-    justifyContent: "center",
-    padding: 20,
-  },
-  modalCard: {
-    padding: 20,
-    borderRadius: 18,
-  },
-  modalTitle: {
-    marginBottom: 16,
-  },
-  uploadPreview: {
-    width: "100%",
-    height: 180,
-    borderRadius: 16,
-    marginVertical: 14,
-  },
-  modalCancel: {
-    marginTop: 12,
-    alignItems: "center",
-  },
-});

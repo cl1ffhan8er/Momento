@@ -3,16 +3,16 @@ import { db } from "@/src/lib/firestore";
 import { storage } from "@/src/lib/storage";
 import { PhotoDoc } from "@/src/types";
 import {
-    collection,
-    deleteDoc,
-    doc,
-    getDoc,
-    getDocs,
-    orderBy,
-    query,
-    setDoc,
-    updateDoc,
-    where,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  setDoc,
+  updateDoc,
+  where,
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
@@ -46,18 +46,22 @@ export const createPhoto = async (
 ): Promise<string> => {
   const photoId = doc(collection(db, COLLECTIONS.PHOTOS)).id;
 
-  const photoData: PhotoDoc = {
-    photoId,
-    albumId,
-    groupId,
-    uploadedBy,
-    storageUrl: storageUrl || null,
-    title,
-    caption,
-    uploadedAt: Date.now(),
-  };
+    const photoData: any = {
+      photoId,
+      albumId,
+      groupId,
+      uploadedBy,
+      storageUrl: storageUrl ?? null,
+      caption: caption ?? null,
+      uploadedAt: Date.now(),
+    };
 
-  await setDoc(doc(db, COLLECTIONS.PHOTOS, photoId), photoData);
+    // Only include optional fields when provided to avoid passing `undefined` to Firestore
+    if (typeof title === "string" && title.length > 0) {
+      photoData.title = title;
+    }
+
+    await setDoc(doc(db, COLLECTIONS.PHOTOS, photoId), photoData);
   return photoId;
 };
 

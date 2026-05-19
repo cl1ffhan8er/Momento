@@ -7,6 +7,7 @@ import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ActivityIndicator, View } from "react-native";
 import "react-native-reanimated";
+import "../global.css";
 
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
 import { AuthService } from "@/src/services/firebase/auth.service";

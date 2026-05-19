@@ -1,15 +1,15 @@
 import { COLLECTIONS, SUBCOLLECTIONS } from "@/src/lib/constants/collections";
 import { db } from "@/src/lib/firestore";
-import { GroupDoc, GroupMember } from "@/src/types";
+import { GroupDoc, GroupMember, UserDoc } from "@/src/types";
 import {
-    collection,
-    doc,
-    getDoc,
-    getDocs,
-    query,
-    updateDoc,
-    where,
-    writeBatch
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+  writeBatch
 } from "firebase/firestore";
 
 const generateJoinCode = (): string => {
@@ -162,6 +162,84 @@ export const joinGroupByCode = async (
 
   await batch.commit();
   return groupId;
+};
+
+export const getUserByUsername = async (
+  username: string
+): Promise<UserDoc | null> => {
+  const usersCollection = collection(db, COLLECTIONS.USERS);
+  const q = query(usersCollection, where("username", "==", username));
+  const querySnapshot = await getDocs(q);
+
+  if (querySnapshot.empty) {
+    return null;
+  }
+
+  return querySnapshot.docs[0].data() as UserDoc;
+};
+
+export const addMemberToGroupByUsername = async (
+  groupId: string,
+  username: string
+): Promise<string> => {
+  const user = await getUserByUsername(username);
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const groupData = await getGroup(groupId);
+  if (!groupData) {
+    throw new Error("Group not found");
+  }
+
+  const memberDoc = doc(
+    db,
+    COLLECTIONS.GROUPS,
+    groupId,
+    SUBCOLLECTIONS.MEMBERS,
+    user.uid
+  );
+  const memberSnapshot = await getDoc(memberDoc);
+  if (memberSnapshot.exists()) {
+    throw new Error("User is already a member of this group");
+  }
+
+  if (groupData.memberCount >= 10) {
+    throw new Error("Group is full (max 10 members)");
+  }
+
+  const memberData: GroupMember = {
+    userId: user.uid,
+    role: "member",
+    joinedAt: Date.now(),
+  };
+
+  const batch = writeBatch(db);
+  batch.set(memberDoc, memberData);
+  batch.update(doc(db, COLLECTIONS.GROUPS, groupId), {
+    memberCount: groupData.memberCount + 1,
+  });
+
+  await batch.commit();
+  return user.uid;
+};
+
+export const updateGroupMemberNickname = async (
+  groupId: string,
+  userId: string,
+  nickname: string
+): Promise<void> => {
+  const memberRef = doc(
+    db,
+    COLLECTIONS.GROUPS,
+    groupId,
+    SUBCOLLECTIONS.MEMBERS,
+    userId
+  );
+
+  await updateDoc(memberRef, {
+    nickname: nickname || null,
+  });
 };
 
 /**
