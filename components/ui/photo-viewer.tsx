@@ -1,3 +1,4 @@
+import { Colors } from "@/constants/theme";
 import { updatePhoto } from "@/src/services/firebase/photos";
 import React, { useState } from "react";
 import { Image, Modal, Pressable, Text, TextInput, View } from "react-native";
@@ -44,52 +45,52 @@ export default function PhotoViewer({
 
   return (
     <Modal visible={visible} transparent animationType="fade">
-      <View className="flex-1 items-center justify-center bg-black/90 px-4">
+      <View className="flex-1 items-center justify-center bg-surface/90 px-4">
         <View className="w-full h-full items-center justify-center">
           <Image source={{ uri: photo?.storageUrl ?? undefined }} className="w-full h-3/4" resizeMode="contain" />
 
           <View className="absolute left-4 top-1/2 -translate-y-6">
-            <Pressable onPress={prev} className="rounded-full bg-white/20 p-3">
-              <Text className="text-white text-2xl">‹</Text>
+            <Pressable onPress={prev} className="rounded-full bg-surface/80 p-3">
+              <Text className="text-textPrimary text-2xl">‹</Text>
             </Pressable>
           </View>
 
           <View className="absolute right-4 top-1/2 -translate-y-6">
-            <Pressable onPress={next} className="rounded-full bg-white/20 p-3">
-              <Text className="text-white text-2xl">›</Text>
+            <Pressable onPress={next} className="rounded-full bg-surface/80 p-3">
+              <Text className="text-textPrimary text-2xl">›</Text>
             </Pressable>
           </View>
 
           <View className="absolute bottom-8 left-4 right-4">
             {editing ? (
-              <View className="rounded-2xl bg-neutral-900 p-3">
+              <View className="rounded-2xl bg-card p-3 shadow-lg">
                 <TextInput
                   value={caption}
                   onChangeText={setCaption}
                   placeholder="Enter caption"
-                  placeholderTextColor="#9ca3af"
-                  className="text-white"
+                  placeholderTextColor={Colors.light.textMuted}
+                  className="text-textPrimary"
                 />
                 <View className="mt-2 flex-row justify-end">
                   <Pressable onPress={() => setEditing(false)} className="mr-3">
-                    <Text className="text-neutral-400">Cancel</Text>
+                    <Text className="text-textMuted">Cancel</Text>
                   </Pressable>
-                  <Pressable onPress={saveCaption} className="bg-white rounded-2xl px-4 py-2">
-                    <Text className="font-bold text-black">Save</Text>
+                  <Pressable onPress={saveCaption} className="bg-primary rounded-2xl px-4 py-2">
+                    <Text className="font-bold text-white">Save</Text>
                   </Pressable>
                 </View>
               </View>
             ) : (
-              <View className="rounded-2xl bg-black/60 p-3 flex-row items-center justify-between">
-                <Text className="text-white">{photo?.caption ?? ""}</Text>
+              <View className="rounded-2xl bg-surface/90 p-3 flex-row items-center justify-between shadow-lg">
+                <Text className="text-textPrimary">{photo?.caption ?? ""}</Text>
                 <Pressable onPress={() => setEditing(true)} className="ml-3">
-                  <Text className="text-neutral-300">Edit</Text>
+                  <Text className="text-textMuted">Edit</Text>
                 </Pressable>
               </View>
             )}
 
             <Pressable onPress={onClose} className="mt-4 items-center">
-              <Text className="text-neutral-400">Close</Text>
+              <Text className="text-textMuted">Close</Text>
             </Pressable>
           </View>
         </View>

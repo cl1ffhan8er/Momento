@@ -16,7 +16,7 @@ export default function GroupCard({
   return (
     <Pressable
       onPress={onPress}
-      className="mb-4 overflow-hidden rounded-3xl bg-neutral-900"
+      className="mb-4 overflow-hidden rounded-3xl bg-accent shadow-lg"
     >
       <Image
         source={{
@@ -28,11 +28,11 @@ export default function GroupCard({
       />
 
       <View className="p-4">
-        <Text className="text-lg font-bold text-white">
+        <Text className="text-lg font-koulen font-bold text-textPrimary">
           {name}
         </Text>
 
-        <Text className="mt-1 text-sm text-neutral-400">
+        <Text className="mt-1 text-sm text-textMuted">
           {memberCount} members
         </Text>
       </View>

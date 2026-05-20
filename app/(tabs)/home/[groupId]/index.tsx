@@ -12,6 +12,7 @@ import {
 
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 import { useGroupDetail } from "@/src/hooks/useGroupDetail";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function GroupDetailScreen() {
   const router = useRouter();
@@ -65,7 +66,7 @@ export default function GroupDetailScreen() {
   }, [router, refresh]);
 
   return (
-    <View className="flex-1 bg-black px-5 pt-16">
+    <SafeAreaView className="flex-1 bg-background px-5" edges={["top", "left", "right"]}>
       {/* HEADER */}
       <View className="mb-6 flex-row items-center">
         {/* BACK */}
@@ -73,25 +74,33 @@ export default function GroupDetailScreen() {
           onPress={() => router.back()}
           className="mr-4"
         >
-          <Text className="text-base text-white">
-            Back
-          </Text>
+          <Text className="text-primary text-5xl">‹</Text>
         </Pressable>
 
         {/* GROUP CARD */}
         <Pressable className="flex-1 flex-row items-center" onPress={() => router.push(`/home/${groupId}/members`)}>
-          <View className="mr-3 h-14 w-14 items-center justify-center rounded-2xl bg-neutral-800">
-            <Text className="text-xl font-bold text-white">
-              {group?.name?.[0] ?? "G"}
-            </Text>
+          <View className="mr-3 h-14 w-14 overflow-hidden rounded-2xl bg-surface">
+            {group?.coverPhotoURL ? (
+              <Image
+                source={{ uri: group.coverPhotoURL }}
+                className="h-full w-full"
+                resizeMode="cover"
+              />
+            ) : (
+              <View className="h-full w-full items-center justify-center bg-card">
+                <Text className="text-xl font-bold text-textPrimary">
+                  {group?.name?.[0] ?? "G"}
+                </Text>
+              </View>
+            )}
           </View>
 
           <View className="flex-1">
-            <Text className="text-xl font-bold text-white">
+            <Text className="text-xl font-koulen font-bold text-textPrimary">
               {group?.name ?? "Group"}
             </Text>
 
-            <Text className="mt-1 text-sm text-neutral-400">
+            <Text className="mt-1 text-sm text-textMuted">
               {group?.memberCount ?? 0} members
             </Text>
           </View>
@@ -102,19 +111,19 @@ export default function GroupDetailScreen() {
           onPress={() =>
             router.push(`/home/${groupId}/invite`)
           }
-          className="ml-3 h-12 w-12 items-center justify-center rounded-full bg-white"
+          className="ml-3 h-12 w-12 items-center justify-center rounded-full bg-secondary"
         >
-          <Text className="text-2xl font-bold text-black">
+          <Text className="text-2xl font-bold text-white">
             +
           </Text>
         </Pressable>
       </View>
 
       <View className="mb-6 items-center">
-        <Text className="text-5xl font-bold tracking-widest text-white uppercase">
+        <Text className="font-koulen text-5xl leading-[72px] tracking-widest text-primary uppercase">
           YOUR ALBUMS
         </Text>
-        <View className="mt-3 h-px w-full bg-neutral-700" />
+        <View className="mt-3 h-px w-full bg-secondary" />
       </View>
 
       {/* SEARCH + SORT */}
@@ -123,8 +132,8 @@ export default function GroupDetailScreen() {
           value={searchQuery}
           onChangeText={setSearchQuery}
           placeholder="Search albums"
-          placeholderTextColor="#737373"
-          className="flex-1 rounded-2xl bg-neutral-900 px-5 py-4 text-white"
+          placeholderTextColor="#6B7280"
+          className="flex-1 rounded-2xl border border-secondary bg-surface px-5 py-4 text-textPrimary"
         />
 
         <Pressable
@@ -133,12 +142,10 @@ export default function GroupDetailScreen() {
               (value) => !value
             )
           }
-          className="ml-3 rounded-2xl bg-neutral-900 px-5 py-4"
+          className="ml-3 rounded-2xl bg-card px-5 py-4 border border-secondary"
         >
-          <Text className="font-semibold text-white">
-            {sortNewest
-              ? "Newest"
-              : "Oldest"}
+          <Text className="font-semibold text-textPrimary">
+            {sortNewest ? "Newest ⬇️" : "Oldest ⬆️"}
           </Text>
         </Pressable>
       </View>
@@ -147,7 +154,7 @@ export default function GroupDetailScreen() {
       {loading ? (
         <ActivityIndicator />
       ) : error ? (
-        <Text className="text-red-500">
+        <Text className="text-textPrimary">
           {error}
         </Text>
       ) : (
@@ -168,12 +175,12 @@ export default function GroupDetailScreen() {
             paddingBottom: 120,
           }}
           ListEmptyComponent={() => (
-            <View className="mt-10 items-center rounded-3xl bg-neutral-900 p-8">
-              <Text className="text-lg font-bold text-white">
+            <View className="mt-10 items-center rounded-3xl bg-card p-8 shadow-lg">
+              <Text className="text-lg font-bold text-textPrimary">
                 No albums yet
               </Text>
 
-              <Text className="mt-2 text-center text-neutral-400">
+              <Text className="mt-2 text-center text-textMuted">
                 Create an album and start
                 sharing memories.
               </Text>
@@ -188,7 +195,7 @@ export default function GroupDetailScreen() {
                 )
               }
             >
-              <View className="overflow-hidden rounded-3xl bg-neutral-900">
+              <View className="overflow-hidden rounded-3xl bg-card shadow-lg">
                 {/* COVER */}
                 {item.coverPhotoUrl ? (
                   <Image
@@ -197,8 +204,8 @@ export default function GroupDetailScreen() {
                     resizeMode="cover"
                   />
                 ) : (
-                  <View className="h-40 items-center justify-center bg-neutral-800">
-                    <Text className="text-4xl font-bold text-white">
+                  <View className="h-40 items-center justify-center bg-surface">
+                    <Text className="text-4xl font-bold text-textPrimary">
                       {item.title[0] ?? "A"}
                     </Text>
                   </View>
@@ -206,11 +213,11 @@ export default function GroupDetailScreen() {
 
                 {/* INFO */}
                 <View className="p-4">
-                  <Text className="text-base font-bold text-white">
+                  <Text className="text-base font-bold text-textPrimary">
                     {item.title}
                   </Text>
 
-                  <Text className="mt-1 text-sm text-neutral-400">
+                  <Text className="mt-1 text-sm text-textMuted">
                     {item.photoCount} photos
                   </Text>
                 </View>
@@ -220,17 +227,19 @@ export default function GroupDetailScreen() {
         />
       )}
 
-      {/* CREATE ALBUM BUTTON */}
-      <Pressable
-        onPress={() =>
-          router.push(`/home/${groupId}/create-album`)
-        }
-        className="absolute bottom-8 left-5 right-5 items-center rounded-3xl bg-white py-5"
-      >
-        <Text className="text-base font-bold text-black">
-          Create Album
-        </Text>
-      </Pressable>
-    </View>
+      {/* CREATE ALBUM BUTTON */} {/* Floating Buttons */}
+      <View className="absolute bottom-8 left-5 right-5 rounded-3xl p-3 shadow-lg">
+        <Pressable
+          onPress={() =>
+            router.push(`/home/${groupId}/create-album`)
+          }
+          className="items-center rounded-3xl bg-primary py-5"
+        >
+          <Text className="text-base font-bold text-white">
+            Create Album
+          </Text>
+        </Pressable>
+      </View>
+    </SafeAreaView>
   );
 }

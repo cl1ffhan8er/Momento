@@ -1,12 +1,11 @@
 import { ThemedText } from "@/components/themed-text";
-import { useThemeColor } from "@/src/hooks/use-theme-color";
-import { Pressable, StyleSheet, type ViewStyle } from "react-native";
+import { Pressable, type ViewStyle } from "react-native";
 
 export type ButtonProps = {
   title: string;
   onPress: () => void;
   accessibilityLabel?: string;
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "accent";
   style?: ViewStyle;
 };
 
@@ -17,33 +16,30 @@ export function Button({
   variant = "primary",
   style,
 }: ButtonProps) {
-  const backgroundColor = useThemeColor(
-    { light: variant === "primary" ? "#0a7ea4" : "#f1f5f9", dark: variant === "primary" ? "#0a7ea4" : "#202328" },
-    "background"
-  );
-  const textColor = variant === "primary" ? "#fff" : "#0a7ea4";
-
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel ?? title}
-      style={[styles.button, { backgroundColor }, style]}
+      className={`rounded-2xl px-4 py-4 items-center justify-center ${
+        variant === "primary"
+          ? "bg-primary"
+          : variant === "secondary"
+          ? "bg-surface border border-secondary"
+          : "bg-accent"
+      }`}
+      style={style}
       onPress={onPress}
     >
-      <ThemedText style={[styles.text, { color: textColor }]}>{title}</ThemedText>
+      <ThemedText
+        className={`text-base font-semibold ${
+          variant === "primary"
+            ? "text-white"
+            : variant === "secondary"
+            ? "text-textPrimary"
+            : "text-primary"
+        }`}
+      >
+        {title}
+      </ThemedText>
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-  },
-  text: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-});

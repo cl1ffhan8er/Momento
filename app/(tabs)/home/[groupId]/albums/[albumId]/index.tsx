@@ -1,14 +1,16 @@
 import { ThemedText } from "@/components/themed-text";
-import PhotoActions from "@/components/ui/photo-actions";
 import PhotoViewer from "@/components/ui/photo-viewer";
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 import { getAlbum } from "@/src/services/firebase/albums";
 import { batchDeletePhotos, createPhoto, getAlbumPhotos, uploadPhotoFile } from "@/src/services/firebase/photos";
+import { getUser } from "@/src/services/firebase/users";
 import type { AlbumDoc, PhotoDoc } from "@/src/types";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { Download, Plus, Trash2 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Image, Modal, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AlbumDetailScreen() {
   const router = useRouter();
@@ -16,6 +18,7 @@ export default function AlbumDetailScreen() {
   const { user } = useCurrentUser();
 
   const [album, setAlbum] = useState<AlbumDoc | null>(null);
+  const [albumCreatorName, setAlbumCreatorName] = useState<string>("Anonymous");
   const [photos, setPhotos] = useState<PhotoDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +53,9 @@ export default function AlbumDetailScreen() {
 
       setAlbum(albumResult);
       setPhotos(photoResult);
+
+      const creator = await getUser(albumResult.createdBy);
+      setAlbumCreatorName(creator?.username ?? "Anonymous");
     } catch (e: any) {
       setError(e.message ?? "Unable to load album");
     } finally {
@@ -138,41 +144,63 @@ export default function AlbumDetailScreen() {
   };
 
   const header = (
-    <View className="pb-4 px-5">
+    <View className="pb-4">
 
-        <Pressable onPress={() => router.back()} className="p-3">
-            <ThemedText>Back</ThemedText>
+      <View className="flex-row items-start mb-4">
+        <Pressable
+          onPress={() => router.back()}
+          className="mr-4 pt-2"
+        >
+          <Text className="text-primary text-5xl">‹</Text>
         </Pressable>
 
-        <View className="mb-6 items-center">
-            <Text className="text-5xl font-bold tracking-widest text-white uppercase">
-                {album?.title ?? "Album"}
-            </Text>
-            <View className="mt-3 h-px w-full bg-neutral-700" />
+        <View className="flex-1">
+          <Text className="text-4xl font-koulen font-bold tracking-widest leading-[72px] text-textPrimary uppercase">
+            {album?.title ?? "Album"}
+          </Text>
+
+          <ThemedText className="text-primary text-sm">
+            Created by {albumCreatorName}
+          </ThemedText>
+
+          <View className="h-px w-full bg-primary" />
         </View>
+      </View>
 
-      {!isEmpty && (
-        <PhotoActions selectionMode={selectionMode} selectedCount={selectedCount} onAdd={() => setUploadModalOpen(true)} onToggleSelect={handleDownloadSelected} onDelete={handleDeleteSelected} />
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center space-x-2">
+          <Pressable onPress={() => setUploadModalOpen(true)} className="px-1 py-2">
+            <Text className="text-sm text-textPrimary"><Plus/></Text>
+          </Pressable>
+          <Pressable onPress={handleDownloadSelected} className="px-1 py-2">
+            <Text className="text-sm text-textPrimary"><Download/></Text>
+          </Pressable>
+        </View>
+        <Pressable onPress={handleDeleteSelected} className="px-1 py-2">
+          <Text className="text-sm text-textPrimary"><Trash2/></Text>
+        </Pressable>
+      </View>
+
+      {selectionMode && selectedCount > 0 && (
+        <ThemedText className="text-textMuted mb-3">{selectedCount} selected</ThemedText>
       )}
-
-      {selectionMode && selectedCount > 0 && <ThemedText className="text-neutral-400 mb-3">{selectedCount} selected</ThemedText>}
     </View>
   );
 
   const renderPhoto = ({ item, index }: { item: PhotoDoc; index: number }) => {
     const selected = selectedPhotoIds.includes(item.photoId);
     return (
-      <Pressable key={item.photoId} className="flex-1 mb-4 mr-2" onPress={() => (selectionMode ? togglePhotoSelection(item.photoId) : (setViewerIndex(index), setViewerOpen(true)))} onLongPress={() => setSelectionMode(true)}>
-        <View className="bg-neutral-900 rounded-2xl p-3">
-          <View className="h-40 rounded-xl overflow-hidden bg-neutral-800 mb-3 items-center justify-center">
+      <Pressable key={item.photoId} className="w-[48%] mb-4" onPress={() => (selectionMode ? togglePhotoSelection(item.photoId) : (setViewerIndex(index), setViewerOpen(true)))} onLongPress={() => setSelectionMode(true)}>
+        <View className="relative bg-card rounded-2xl p-3 shadow-sm">
+          <View className="h-40 rounded-xl overflow-hidden bg-surface mb-3 items-center justify-center">
             {item.storageUrl ? <Image source={{ uri: item.storageUrl }} className="w-full h-full" resizeMode="cover" /> : <ThemedText>P</ThemedText>}
           </View>
 
-          <ThemedText className="font-bold mb-1">{item.title || ""}</ThemedText>
-          <ThemedText className="text-neutral-400">{item.caption ?? ""}</ThemedText>
+          <ThemedText className="font-bold mb-1 text-textPrimary">{item.title || ""}</ThemedText>
+          <ThemedText className="text-textMuted">{item.caption ?? ""}</ThemedText>
 
           {selectionMode && (
-            <View className={`absolute top-3 right-3 w-6 h-6 rounded-full items-center justify-center ${selected ? "bg-teal-600" : "bg-white/90"}`}>
+            <View className={`absolute top-3 right-3 w-6 h-6 rounded-full items-center justify-center ${selected ? "bg-primary" : "bg-surface/90"}`}>
               {selected && <ThemedText className="text-white">✓</ThemedText>}
             </View>
           )}
@@ -182,48 +210,59 @@ export default function AlbumDetailScreen() {
   };
 
   return (
-    <View className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-background">
       {loading ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" />
         </View>
       ) : error ? (
         <View className="flex-1 items-center justify-center">
-          <ThemedText className="text-red-500">{error}</ThemedText>
+          <ThemedText className="text-textPrimary">{error}</ThemedText>
         </View>
       ) : isEmpty ? (
         <View className="p-5">
           {header}
-          <View className="bg-neutral-900 rounded-3xl p-6 items-center">
+          <View className="bg-card rounded-3xl p-6 items-center shadow-lg">
             <ThemedText type="subtitle">No photos yet</ThemedText>
-            <ThemedText className="text-neutral-400 mt-2 text-center">Upload photos to share in this album.</ThemedText>
-            <Pressable onPress={() => setUploadModalOpen(true)} className="mt-4 rounded-2xl bg-white px-4 py-3">
-              <ThemedText className="font-bold text-black">Upload Photos</ThemedText>
+            <ThemedText className="text-textMuted mt-2 text-center">Upload photos to share in this album.</ThemedText>
+            <Pressable onPress={() => setUploadModalOpen(true)} className="mt-4 rounded-2xl bg-primary px-4 py-3">
+              <ThemedText className="font-bold text-white">Upload Photos</ThemedText>
             </Pressable>
           </View>
         </View>
       ) : (
-        <FlatList<PhotoDoc>
-          ListHeaderComponent={header}
-          ListHeaderComponentStyle={{ padding: 20, paddingBottom: 0 }}
-          data={photos}
-          keyExtractor={(item: PhotoDoc) => item.photoId}
-          numColumns={2}
-          columnWrapperStyle={{ justifyContent: "space-between" }}
-          contentContainerStyle={{ paddingTop: 8, paddingHorizontal: 20, paddingBottom: 40 }}
-          renderItem={renderPhoto}
-        />
+        <View className="flex-1 px-5">
+          {header}
+          <View className="flex-1 rounded-3xl bg-card p-0 shadow-lg">
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 40 }}
+              className="flex-1"
+            >
+              <View className="flex-row flex-wrap justify-between">
+                {photos.map((photo, index) => renderPhoto({ item: photo, index }))}
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      )}
+
+      {selectionMode && (
+        <Pressable onPress={() => { setSelectionMode(false); setSelectedPhotoIds([]); }} className="absolute right-5 bottom-8 rounded-full bg-surface/80 p-4 shadow-lg">
+          <Text className="text-textPrimary text-base">✕</Text>
+        </Pressable>
       )}
 
       <Modal visible={uploadModalOpen} animationType="slide" transparent>
-        <View className="flex-1 bg-black/60 justify-center p-5">
-          <View className="bg-neutral-900 rounded-3xl p-6">
+        <View className="flex-1 bg-surface/90 justify-center p-5">
+          <View className="bg-card rounded-3xl p-6 shadow-xl">
             <ThemedText type="title" className="mb-4">
               Upload Photos
             </ThemedText>
 
-            <Pressable onPress={handlePickPhoto} className="rounded-2xl bg-white px-4 py-3 mb-4 items-center">
-              <ThemedText className="font-bold text-black">Choose Photos</ThemedText>
+            <Pressable onPress={handlePickPhoto} className="rounded-2xl bg-primary px-4 py-3 mb-4 items-center">
+              <ThemedText className="font-bold text-white">Choose Photos</ThemedText>
             </Pressable>
 
             {selectedImageUris.length > 0 ? (
@@ -234,18 +273,18 @@ export default function AlbumDetailScreen() {
               </View>
             ) : null}
 
-            <Pressable onPress={handleUploadPhotos} className="rounded-2xl bg-white px-4 py-3 items-center">
-              <ThemedText className="font-bold text-black">{uploading ? "Uploading..." : "Upload"}</ThemedText>
+            <Pressable onPress={handleUploadPhotos} className="rounded-2xl bg-primary px-4 py-3 items-center">
+              <ThemedText className="font-bold text-white">{uploading ? "Uploading..." : "Upload"}</ThemedText>
             </Pressable>
 
             <Pressable onPress={() => setUploadModalOpen(false)} className="mt-4 items-center">
-              <ThemedText className="text-neutral-400">Cancel</ThemedText>
+              <ThemedText className="text-textMuted">Cancel</ThemedText>
             </Pressable>
           </View>
         </View>
       </Modal>
 
       <PhotoViewer visible={viewerOpen} photos={photos.map((p) => ({ photoId: p.photoId, storageUrl: p.storageUrl, caption: p.caption }))} startIndex={viewerIndex} onClose={() => setViewerOpen(false)} onRefresh={loadAlbumData} />
-    </View>
-  );
+    </SafeAreaView>
+  );  
 }

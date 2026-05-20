@@ -3,9 +3,10 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
+import { useFonts } from "expo-font";
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import "react-native-reanimated";
 import "../global.css";
 
@@ -22,6 +23,14 @@ export default function RootLayout() {
   const router = useRouter();
   const [ready, setReady] = useState(false);
   const [user, setUser] = useState<any>(undefined);
+  const [fontsLoaded] = useFonts({
+    Koulen: require("../assets/fonts/Koulen-Regular.ttf"),
+
+    JustAnotherHand: require(
+      "../assets/fonts/JustAnotherHand-Regular.ttf"
+    ),
+  });
+  console.log(fontsLoaded);
 
   useEffect(() => {
     const authService = new AuthService();
@@ -40,13 +49,24 @@ export default function RootLayout() {
     router.replace(target);
 }, [ready, user]);
 
-  if (!ready) {
+  if (!ready || !fontsLoaded) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <ActivityIndicator />
       </View>
     );
-}
+  }
+
+  if (Text && (Text as any).defaultProps == null) {
+    (Text as any).defaultProps = {} as any;
+  }
+  (Text as any).defaultProps.style = [{ fontFamily: "Koulen" }, (Text as any).defaultProps.style || {}];
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>

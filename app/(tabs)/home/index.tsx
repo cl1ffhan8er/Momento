@@ -11,6 +11,7 @@ import GroupCard from "@/components/ui/group-card";
 
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 import { useGroups } from "@/src/hooks/useGroups";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function GroupsScreen() {
   const router = useRouter();
@@ -24,12 +25,12 @@ export default function GroupsScreen() {
   const isLoading = authLoading || loading;
 
   return (
-    <View className="flex-1 bg-black px-5 pt-16">
+    <SafeAreaView className="flex-1 bg-background px-5" edges={["top", "left", "right"]}>
       <View className="mb-6 items-center">
-        <Text className="text-5xl font-bold tracking-widest text-white uppercase">
-          YOUR GROUP
+        <Text className="font-koulen text-5xl leading-[72px] tracking-widest text-primary uppercase">
+          YOUR GROUPS
         </Text>
-        <View className="mt-3 h-px w-full bg-neutral-700" />
+        <View className="mt-3 h-px w-full bg-primary" />
       </View>
 
       <ScrollView
@@ -41,16 +42,16 @@ export default function GroupsScreen() {
         {isLoading ? (
           <ActivityIndicator />
         ) : error ? (
-          <Text className="text-red-500">
+          <Text className="text-textPrimary">
             {error}
           </Text>
         ) : groups.length === 0 ? (
-          <View className="rounded-3xl bg-neutral-900 p-6">
-            <Text className="text-lg font-bold text-white">
+          <View className="rounded-3xl bg-card p-6 shadow-lg">
+            <Text className="text-lg font-bold text-textPrimary">
               No groups yet
             </Text>
 
-            <Text className="mt-2 text-neutral-400">
+            <Text className="mt-2 text-textMuted">
               Create your first group or join one.
             </Text>
           </View>
@@ -59,6 +60,7 @@ export default function GroupsScreen() {
             <GroupCard
               key={group.groupId}
               name={group.name}
+              image={group.coverPhotoURL ?? undefined}
               memberCount={group.memberCount}
               onPress={() =>
                 router.push(`/home/${group.groupId}`)
@@ -69,22 +71,27 @@ export default function GroupsScreen() {
       </ScrollView>
 
       {/* Floating Buttons */}
-      <View className="absolute bottom-8 left-5 right-5 gap-3">
+      <View className="font-koulen absolute bottom-8 left-5 right-5 rounded-3xl p-4 shadow-lg">
+        <View className="mt-3 h-px w-full bg-primary mb-4" />
         <Button
           title="Create a Group"
+          style={{ width: "100%" }}
           onPress={() =>
             router.push("/home/create-group")
           }
         />
 
+        <View className="h-3" />
+
         <Button
           title="Join a Group"
-          variant="secondary"
+          variant="accent"
+          style={{ width: "100%" }}
           onPress={() =>
             router.push("/home/join-group")
           }
         />
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

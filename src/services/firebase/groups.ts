@@ -1,15 +1,16 @@
 import { COLLECTIONS, SUBCOLLECTIONS } from "@/src/lib/constants/collections";
 import { db } from "@/src/lib/firestore";
+import { uploadFile } from "@/src/services/firebase/storage";
 import { GroupDoc, GroupMember, UserDoc } from "@/src/types";
 import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-  writeBatch
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    query,
+    updateDoc,
+    where,
+    writeBatch
 } from "firebase/firestore";
 
 const generateJoinCode = (): string => {
@@ -368,4 +369,11 @@ export const updateGroup = async (
   updates: Partial<Pick<GroupDoc, "name" | "coverPhotoURL">>
 ): Promise<void> => {
   await updateDoc(doc(db, COLLECTIONS.GROUPS, groupId), updates);
+};
+
+export const uploadGroupCoverPhoto = async (
+  uri: string,
+  groupId: string
+): Promise<string> => {
+  return uploadFile(uri, `${COLLECTIONS.GROUPS}/${groupId}`);
 };

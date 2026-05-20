@@ -5,6 +5,7 @@ import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
+import { Flower } from "lucide-react-native";
 import { Text, View } from "react-native";
 
 export default function TabLayout() {
@@ -12,14 +13,10 @@ export default function TabLayout() {
 
   return (
     <View style={{ flex: 1 }}>
-      <View
-        style={{
-          height: 60,
-          justifyContent: "center",
-          paddingHorizontal: 16,
-        }}
-      >
-        <Text style={{ fontSize: 20, fontWeight: "bold", color:"white" }}>
+      <View className="flex-row items-center px-8 pt-14 bg-primary">
+        <Flower size={24} strokeWidth={2.2} color="#fff" />
+
+        <Text className="font-koulen ml-3 text-2xl font-bold text-white">
           Momento
         </Text>
       </View>

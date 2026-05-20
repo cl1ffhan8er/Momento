@@ -1,3 +1,4 @@
+import { Colors } from "@/constants/theme";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
@@ -69,15 +70,15 @@ export default function CreateAlbumScreen() {
   };
 
   return (
-    <View className="flex-1 bg-black px-5 pt-16">
+    <View className="flex-1 bg-background px-5 pt-16">
       <View className="mb-8 flex-row items-center justify-between">
-        <Text className="text-3xl font-bold text-white">Create Album</Text>
+        <Text className="font-koulen text-3xl font-bold text-textPrimary">Create Album</Text>
         <Pressable onPress={() => router.back()}>
-          <Text className="text-base text-white">Cancel</Text>
+          <Text className="text-base text-textPrimary">Cancel</Text>
         </Pressable>
       </View>
 
-      <Text className="text-neutral-400">
+      <Text className="text-textMuted">
         Give your new album a title and choose a cover image for the gallery tile.
       </Text>
 
@@ -85,21 +86,21 @@ export default function CreateAlbumScreen() {
         value={title}
         onChangeText={setTitle}
         placeholder="Album title"
-        placeholderTextColor="#737373"
-        className="mt-6 rounded-2xl bg-neutral-900 px-5 py-4 text-white"
+        placeholderTextColor={Colors.light.textMuted}
+        className="mt-6 rounded-2xl border border-secondary bg-surface px-5 py-4 text-textPrimary"
       />
 
       <Pressable
         onPress={handlePickCover}
-        className="mt-4 rounded-2xl bg-neutral-900 px-5 py-4"
+        className="mt-4 rounded-2xl border border-secondary bg-surface px-5 py-4"
       >
-        <Text className="text-base font-semibold text-white">
+        <Text className="text-base font-semibold text-textPrimary">
           {coverUri ? "Change cover photo" : "Choose cover photo"}
         </Text>
       </Pressable>
 
       {coverUri ? (
-        <View className="mt-4 overflow-hidden rounded-3xl bg-neutral-800">
+        <View className="mt-4 overflow-hidden rounded-3xl bg-card shadow-lg">
           <Image
             source={{ uri: coverUri }}
             className="h-52 w-full"
@@ -109,15 +110,15 @@ export default function CreateAlbumScreen() {
       ) : null}
 
       {error ? (
-        <Text className="mt-3 text-sm text-red-500">{error}</Text>
+        <Text className="mt-3 text-sm text-textPrimary">{error}</Text>
       ) : null}
 
       <Pressable
         onPress={handleCreate}
         disabled={loading}
-        className="mt-6 items-center rounded-2xl bg-white py-4"
+        className="mt-6 items-center rounded-2xl bg-primary py-4"
       >
-        <Text className="font-bold text-black">
+        <Text className="font-bold text-white">
           {loading ? "Creating..." : "Create Album"}
         </Text>
       </Pressable>

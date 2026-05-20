@@ -1,3 +1,4 @@
+import { Colors } from "@/constants/theme";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
@@ -37,15 +38,15 @@ export default function InviteScreen() {
   };
 
   return (
-    <View className="flex-1 bg-black px-5 pt-16">
+    <View className="flex-1 bg-background px-5 pt-16">
       <View className="mb-8 flex-row items-center justify-between">
-        <Text className="text-3xl font-bold text-white">Invite Member</Text>
+        <Text className="font-koulen text-3xl font-bold text-textPrimary">Invite Member</Text>
         <Pressable onPress={() => router.back()}>
-          <Text className="text-base text-white">Cancel</Text>
+          <Text className="text-base text-textPrimary">Cancel</Text>
         </Pressable>
       </View>
 
-      <Text className="text-neutral-400">
+      <Text className="text-textMuted">
         Add someone by their username. Enter the username exactly as it appears.
       </Text>
 
@@ -53,20 +54,20 @@ export default function InviteScreen() {
         value={username}
         onChangeText={setUsername}
         placeholder="@username"
-        placeholderTextColor="#737373"
-        className="mt-6 rounded-2xl bg-neutral-900 px-5 py-4 text-white"
+        placeholderTextColor={Colors.light.textMuted}
+        className="mt-6 rounded-2xl border border-secondary bg-surface px-5 py-4 text-textPrimary"
       />
 
       {error ? (
-        <Text className="mt-3 text-sm text-red-500">{error}</Text>
+        <Text className="mt-3 text-sm text-textPrimary">{error}</Text>
       ) : null}
 
       <Pressable
         onPress={handleInvite}
         disabled={loading}
-        className="mt-6 items-center rounded-2xl bg-white py-4"
+        className="mt-6 items-center rounded-2xl bg-primary py-4"
       >
-        <Text className="font-bold text-black">
+        <Text className="font-bold text-white">
           {loading ? "Adding..." : "Add Member"}
         </Text>
       </Pressable>
