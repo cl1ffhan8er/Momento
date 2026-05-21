@@ -1,4 +1,9 @@
-import { createGroup, getGroup, getUserGroups, joinGroupByCode } from "@/src/services/firebase/groups";
+import {
+  createGroup,
+  getGroup,
+  getUserGroups,
+  joinGroupByCode,
+} from "@/src/services/firebase/groups";
 import type { GroupDoc } from "@/src/types";
 import { useCallback, useEffect, useState } from "react";
 
@@ -33,22 +38,22 @@ export function useGroups(userId: string | null) {
 
   const createNewGroup = useCallback(
     async (name: string, coverPhotoURL?: string) => {
-      if (!userId) {
-        throw new Error("Not authenticated");
-      }
-      return createGroup(userId, name, coverPhotoURL);
+      if (!userId) throw new Error("Not authenticated");
+      const groupId = await createGroup(userId, name, coverPhotoURL);
+      await loadGroups();
+      return groupId;
     },
-    [userId]
+    [userId, loadGroups],
   );
 
   const joinGroup = useCallback(
     async (joinCode: string) => {
-      if (!userId) {
-        throw new Error("Not authenticated");
-      }
-      return joinGroupByCode(userId, joinCode);
+      if (!userId) throw new Error("Not authenticated");
+      const groupId = await joinGroupByCode(userId, joinCode);
+      await loadGroups();
+      return groupId;
     },
-    [userId]
+    [userId, loadGroups],
   );
 
   return {
