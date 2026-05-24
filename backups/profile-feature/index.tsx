@@ -1,6 +1,5 @@
-import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback } from "react";
-import { ActivityIndicator, Image, Pressable, Text, TouchableOpacity, View } from "react-native";
+import { useRouter } from "expo-router";
+import { ActivityIndicator, Image, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
@@ -11,15 +10,9 @@ export default function ProfileScreen() {
   const router = useRouter();
 
   const { user, loading: authLoading } = useCurrentUser();
-  const { profile, loading, refresh } = useProfile(user?.uid ?? null);
+  const { profile, loading } = useProfile(user?.uid ?? null);
 
   const isLoading = authLoading || loading;
-
-  useFocusEffect(
-    useCallback(() => {
-      refresh();
-    }, [refresh])
-  );
 
   const handleLogout = async () => {
     await getAuthInstance().signOut();
@@ -86,7 +79,7 @@ export default function ProfileScreen() {
               className="flex-row items-center justify-between py-4"
             >
               <View>
-                <Text className="text-base font-bold text-textPrimary">
+                <Text className="text-base font-semibold text-textPrimary">
                   Edit Profile
                 </Text>
                 <Text className="mt-1 text-sm text-textMuted">
@@ -95,18 +88,29 @@ export default function ProfileScreen() {
               </View>
               <Text className="text-2xl text-textMuted">›</Text>
             </Pressable>
+
+            <View className="h-px w-full bg-surface" />
+
+            <View className="py-4">
+              <Text className="text-base font-semibold text-textPrimary">
+                Account
+              </Text>
+              <Text className="mt-1 text-sm text-textMuted">
+                Member since{" "}
+                {new Date(profile.createdAt).toLocaleDateString()}
+              </Text>
+            </View>
           </View>
 
           <View className="mt-6">
-            <TouchableOpacity
+            <Pressable
               onPress={handleLogout}
-              activeOpacity={0.8}
-              className="items-center rounded-2xl bg-red-500 py-4"
+              className="items-center rounded-3xl border border-red-400 bg-card py-4 shadow-lg"
             >
-              <Text className="text-base font-bold text-white">
+              <Text className="text-base font-semibold text-red-500">
                 Log Out
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       )}

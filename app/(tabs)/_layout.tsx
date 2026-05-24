@@ -2,14 +2,13 @@ import { Tabs } from "expo-router";
 import React, { useEffect, useState } from "react";
 
 import { HapticTab } from "@/components/haptic-tab";
-import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
 import { getAuthInstance } from "@/src/lib/auth";
 import { AuthService } from "@/src/services/firebase/auth.service";
 import { router } from "expo-router";
 import { Flower, LogOut } from "lucide-react-native";
-import { Pressable, Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 
 const authService = new AuthService();
 
@@ -64,7 +63,11 @@ export default function TabLayout() {
           name="home"
           options={{
             tabBarIcon: ({ color }) => (
-              <IconSymbol size={28} name="person.3.fill" color={color} />
+              <Image
+                source={require("@/assets/images/homeIcon.png")}
+                style={{ width: 28, height: 28, tintColor: color }}
+                resizeMode="contain"
+              />
             ),
           }}
         />
@@ -72,7 +75,13 @@ export default function TabLayout() {
           name="profile"
           options={{
             tabBarIcon: ({ color }) => (
-              <IconSymbol size={28} name="person.fill" color={color} />
+              <Image
+                source={require("@/assets/images/profileIcon.png")}
+                style={{ width: 28, height: 28, tintColor: color }}
+                resizeMode="contain"
+
+                // <IconSymbol size={28} name="person.3.fill" color={color} rawr />
+              />
             ),
           }}
         />
