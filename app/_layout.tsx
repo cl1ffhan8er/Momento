@@ -12,9 +12,7 @@ import "../global.css";
 
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
 import { AuthService } from "@/src/services/firebase/auth.service";
-import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState } from "react";
-WebBrowser.maybeCompleteAuthSession();
 
 export const unstable_settings = {
   anchor: "(tabs)",

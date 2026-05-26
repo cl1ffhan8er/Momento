@@ -1,8 +1,18 @@
 import { useGoogleAuth } from "@/src/hooks/use-google";
 import { AuthService } from "@/src/services/firebase/auth.service";
 import { router } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+
+WebBrowser.maybeCompleteAuthSession();
 
 const authService = new AuthService();
 
@@ -21,7 +31,11 @@ export default function Login() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.card}>
         <TextInput
           style={styles.input}
@@ -72,17 +86,18 @@ export default function Login() {
           <Text style={styles.signupTextBold}>Sign up</Text>
         </Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: "#dce4ec",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 28,
+    paddingVertical: 40,
   },
   card: {
     width: "100%",
@@ -127,7 +142,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(58,63,110,0.13)",
   },
   dividerText: {
-    fontSize: 12,
+    fontSize: 10,
     color: "#b0bad0",
     marginHorizontal: 12,
   },
@@ -159,7 +174,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   googleButtonText: {
-    fontSize: 14,
+    fontSize: 10,
     color: "#3a3f6e",
   },
   signupLink: {

@@ -1,6 +1,13 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback } from "react";
-import { ActivityIndicator, Image, Pressable, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
@@ -18,7 +25,7 @@ export default function ProfileScreen() {
   useFocusEffect(
     useCallback(() => {
       refresh();
-    }, [refresh])
+    }, [refresh]),
   );
 
   const handleLogout = async () => {
@@ -69,9 +76,7 @@ export default function ProfileScreen() {
               {profile.username ?? "User"}
             </Text>
 
-            <Text className="mt-1 text-sm text-textMuted">
-              {profile.email}
-            </Text>
+            <Text className="mt-1 text-sm text-textMuted">{profile.email}</Text>
 
             {profile.bio ? (
               <Text className="mt-3 text-center text-base text-textMuted">
@@ -89,8 +94,8 @@ export default function ProfileScreen() {
                 <Text className="text-base font-bold text-textPrimary">
                   Edit Profile
                 </Text>
-                <Text className="mt-1 text-sm text-textMuted">
-                  Change your photo, name, and bio
+                <Text className="mt-1 text-xs text-textMuted">
+                  Update profile
                 </Text>
               </View>
               <Text className="text-2xl text-textMuted">›</Text>
@@ -103,9 +108,7 @@ export default function ProfileScreen() {
               activeOpacity={0.8}
               className="items-center rounded-2xl bg-red-500 py-4"
             >
-              <Text className="text-base font-bold text-white">
-                Log Out
-              </Text>
+              <Text className="text-base font-bold text-white">Log Out</Text>
             </TouchableOpacity>
           </View>
         </View>

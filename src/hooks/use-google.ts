@@ -22,6 +22,9 @@ export function useGoogleAuth() {
   });
 
   useEffect(() => {
+    console.log("Google request redirectUri:", request?.url);
+    console.log("Google response:", JSON.stringify(response));
+    console.log("Google response:", JSON.stringify(response));
     if (response?.type === "success") {
       const { id_token, access_token } = response.params;
       const credential = GoogleAuthProvider.credential(
