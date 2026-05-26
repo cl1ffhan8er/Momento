@@ -1,5 +1,6 @@
 import { getAuthInstance } from "@/src/lib/auth";
 import { AuthService } from "@/src/services/firebase/auth.service";
+import * as AuthSession from "expo-auth-session";
 import * as Google from "expo-auth-session/providers/google";
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
@@ -9,6 +10,10 @@ import { useEffect } from "react";
 WebBrowser.maybeCompleteAuthSession();
 
 const authService = new AuthService();
+
+const redirectUri = AuthSession.makeRedirectUri({
+  scheme: "momento",
+});
 
 export function useGoogleAuth() {
   const [request, response, promptAsync] = Google.useAuthRequest({
