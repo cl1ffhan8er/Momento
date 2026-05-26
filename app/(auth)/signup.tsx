@@ -31,6 +31,10 @@ export default function Signup() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.appName}>Momento</Text>
+      </View>
+
       <View style={styles.card}>
         <TextInput
           style={styles.input}
@@ -85,6 +89,17 @@ export default function Signup() {
 }
 
 const styles = StyleSheet.create({
+  header: {
+    alignItems: "center",
+    marginBottom: 32,
+  },
+  appName: {
+    fontSize: 42,
+    fontWeight: "bold",
+    color: "#3a3f6e",
+    fontFamily: "Koulen",
+    letterSpacing: 2,
+  },
   container: {
     flex: 1,
     backgroundColor: "#dde3f0",

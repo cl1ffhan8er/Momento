@@ -36,6 +36,10 @@ export default function Login() {
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
+      <View style={styles.header}>
+        <Text style={styles.appName}>Momento</Text>
+      </View>
+
       <View style={styles.card}>
         <TextInput
           style={styles.input}
@@ -91,6 +95,17 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
+  header: {
+    alignItems: "center",
+    marginBottom: 32,
+  },
+  appName: {
+    fontSize: 42,
+    fontWeight: "bold",
+    color: "#3a3f6e",
+    fontFamily: "Koulen",
+    letterSpacing: 2,
+  },
   container: {
     flexGrow: 1,
     backgroundColor: "#dce4ec",
