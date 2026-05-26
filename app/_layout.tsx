@@ -12,7 +12,9 @@ import "../global.css";
 
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
 import { AuthService } from "@/src/services/firebase/auth.service";
+import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState } from "react";
+WebBrowser.maybeCompleteAuthSession();
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -26,9 +28,7 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     Koulen: require("../assets/fonts/Koulen-Regular.ttf"),
 
-    JustAnotherHand: require(
-      "../assets/fonts/JustAnotherHand-Regular.ttf"
-    ),
+    JustAnotherHand: require("../assets/fonts/JustAnotherHand-Regular.ttf"),
   });
   console.log(fontsLoaded);
 
@@ -47,7 +47,7 @@ export default function RootLayout() {
     const target = user ? "/(tabs)/home" : "/(auth)/login";
 
     router.replace(target);
-}, [ready, user]);
+  }, [ready, user]);
 
   if (!ready || !fontsLoaded) {
     return (
@@ -66,7 +66,10 @@ export default function RootLayout() {
   if (Text && (Text as any).defaultProps == null) {
     (Text as any).defaultProps = {} as any;
   }
-  (Text as any).defaultProps.style = [{ fontFamily: "Koulen" }, (Text as any).defaultProps.style || {}];
+  (Text as any).defaultProps.style = [
+    { fontFamily: "Koulen" },
+    (Text as any).defaultProps.style || {},
+  ];
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>

@@ -31,6 +31,7 @@ export function useGoogleAuth() {
             const username = displayName ?? email?.split("@")[0] ?? "user";
             await authService.createUserProfile(uid, username);
           }
+          await WebBrowser.coolDownAsync();
           router.replace("/(tabs)/home");
         })
         .catch((e) => alert(e.message));
